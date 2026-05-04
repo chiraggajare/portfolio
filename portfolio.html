@@ -55,6 +55,7 @@
       }
 
       /* NAV */
+      /* NAV */
       nav {
         position: fixed;
         top: 0;
@@ -77,10 +78,6 @@
         text-decoration: none;
       }
 
-      .nav-logo span {
-        color: var(--coral);
-      }
-
       .nav-links {
         display: flex;
         gap: 2rem;
@@ -93,11 +90,17 @@
         text-decoration: none;
         color: var(--ink-soft);
         transition: color 0.2s;
-        letter-spacing: 0.02em;
       }
 
       .nav-links a:hover {
         color: var(--coral);
+      }
+
+      /* HAMBURGER (hidden by default) */
+      #menu-toggle {
+        display: none;
+        font-size: 1.8rem;
+        cursor: pointer;
       }
 
       /* HERO */
@@ -1138,26 +1141,39 @@
           padding: 1rem 1.5rem;
         }
 
-        .menu-toggle {
+        /* show hamburger */
+        #menu-toggle {
           display: block;
         }
 
+        /* hide normal navbar */
         .nav-links {
           position: absolute;
           top: 70px;
-          right: 0;
-          width: 100%;
+          right: 1rem;
+          width: 200px;
+
           flex-direction: column;
-          background: #111;
-          padding: 1.5rem 0;
-          gap: 1.5rem;
-          align-items: center;
+          background: white;
+          border-radius: 12px;
+          padding: 1rem;
+
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 
           display: none;
         }
 
+        /* show when active */
         .nav-links.active {
           display: flex;
+        }
+
+        .nav-links li {
+          text-align: center;
+        }
+
+        .nav-links a {
+          padding: 0.5rem 0;
         }
         section {
           padding: 4rem 1.5rem;
@@ -1197,16 +1213,15 @@
     <nav>
       <a href="#hero" class="nav-logo">Chirag Gajare</a>
 
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+
       <div id="menu-toggle">☰</div>
     </nav>
-
-    <!-- Side Drawer -->
-    <div id="side-menu" class="side-menu">
-      <a href="#about">About</a>
-      <a href="#experience">Experience</a>
-      <a href="#projects">Projects</a>
-      <a href="#contact">Contact</a>
-    </div>
 
     <!-- HERO -->
     <section id="hero">
@@ -1455,23 +1470,19 @@
     </footer>
 
     <script>
-  const toggle = document.getElementById("menu-toggle");
-  const menu = document.getElementById("side-menu");
-  const overlay = document.getElementById("overlay"); // optional
+      const toggle = document.getElementById("menu-toggle");
+      const navLinks = document.getElementById("nav-links");
 
-  // Toggle menu
-  toggle.addEventListener("click", () => {
-    menu.classList.toggle("active");
-    if (overlay) overlay.classList.toggle("active");
-  });
+      toggle.onclick = () => {
+        navLinks.classList.toggle("active");
+      };
 
-  // Close menu when clicking any link inside it
-  document.querySelectorAll("#side-menu a").forEach(link => {
-    link.addEventListener("click", () => {
-      menu.classList.remove("active");
-      if (overlay) overlay.classList.remove("active");
-    });
-  });
-</script>
+      // close on click
+      document.querySelectorAll("#nav-links a").forEach((link) => {
+        link.onclick = () => {
+          navLinks.classList.remove("active");
+        };
+      });
+    </script>
   </body>
 </html>
