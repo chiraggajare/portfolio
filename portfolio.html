@@ -1175,6 +1175,7 @@
         .nav-links a {
           padding: 0.5rem 0;
         }
+
         section {
           padding: 4rem 1.5rem;
         }
@@ -1182,18 +1183,33 @@
           padding: 6rem 1.5rem 3rem;
         }
         .hero-layout {
-          gap: 1.25rem;
+          flex-direction: column;
+          align-items: center;
+          gap: 1.2rem;
         }
+
+        /* control order */
         .hero-hey {
-          font-size: 2.4rem;
+          order: 1;
+          font-size: clamp(3.2rem, 9vw, 4.2rem);
         }
+
+        .hero-photo-wrap {
+          order: 2;
+          margin: 0.5rem 0;
+        }
+
         .hero-name-block {
-          font-size: 2rem;
+          order: 3;
+          font-size: clamp(2.8rem, 8vw, 3.6rem);
+          text-align: center;
+          line-height: 1.1;
         }
+
         .hero-photo,
         .hero-photo-placeholder {
-          width: 130px;
-          height: 130px;
+          width: clamp(180px, 45vw, 260px);
+          height: clamp(180px, 45vw, 260px);
         }
         .about-grid {
           grid-template-columns: 1fr;
