@@ -1196,3 +1196,35 @@ a:hover { color: var(--pink); }
 .animated-dots span:nth-child(1) { animation-delay: 0s; }
 .animated-dots span:nth-child(2) { animation-delay: 0.3s; }
 .animated-dots span:nth-child(3) { animation-delay: 0.6s; }
+
+/* ===== CLOUD TOGGLE ===== */
+.cloud-toggle-wrapper {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  padding: 0.5rem;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.cloud-toggle-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--white-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  transition: all 0.3s ease;
+}
+
+.cloud-toggle-wrapper:hover .cloud-toggle-label {
+  color: var(--white);
+}
+
+.cloud-toggle-wrapper.active .cloud-toggle-label {
+  color: var(--white);
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(124, 58, 237, 0.8);
+}

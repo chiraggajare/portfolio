@@ -78,6 +78,8 @@ function CameraController({ mouse }) {
 }
 
 export default function SpaceScene({ mouse }) {
+  const showCosmicClouds = useStore((state) => state.showCosmicClouds)
+
   return (
     <div className="space-canvas">
       <Canvas
@@ -96,7 +98,7 @@ export default function SpaceScene({ mouse }) {
         <CameraController mouse={mouse} />
         
         <Starfield />
-        <CosmicClouds />
+        {showCosmicClouds && <CosmicClouds />}
         <Galaxies />
         <ShootingStars />
       </Canvas>

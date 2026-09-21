@@ -21,6 +21,8 @@ function App() {
   const { activeSection, navigateTo, SECTION_COUNT } = useScrollProgress()
   const mouse = useMousePosition()
   const [mounted, setMounted] = useState(false)
+  const showCosmicClouds = useStore((state) => state.showCosmicClouds)
+  const toggleCosmicClouds = useStore((state) => state.toggleCosmicClouds)
   
   const wrapperRef = useRef(null)
   const sectionsRef = useRef([])
@@ -95,7 +97,7 @@ function App() {
         else footerRef.current.classList.remove('visible');
       }
       if (indicatorRef.current) {
-        if (progress > 0.1) indicatorRef.current.classList.add('hidden');
+        if (progress > 0.02) indicatorRef.current.classList.add('hidden');
         else indicatorRef.current.classList.remove('hidden');
       }
 
@@ -216,6 +218,10 @@ function App() {
 
       <div ref={footerRef} className="footer-text">
         Designed & built by Chirag Gajare · 2025 · Crafted with React & Three.js
+      </div>
+
+      <div className={`cloud-toggle-wrapper ${showCosmicClouds ? 'active' : ''}`} onClick={toggleCosmicClouds} title="Toggle Cosmic Clouds">
+        <span className="cloud-toggle-label">Cosmic Clouds</span>
       </div>
     </>
   )
