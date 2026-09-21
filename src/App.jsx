@@ -82,7 +82,13 @@ function App() {
       const scrollIndex = progress * (SECTION_COUNT - 1);
 
       if (progressLineRef.current) {
-        progressLineRef.current.style.height = `${progress * 100}%`;
+        if (window.innerWidth <= 768) {
+          progressLineRef.current.style.width = `${progress * 100}%`;
+          progressLineRef.current.style.height = '100%';
+        } else {
+          progressLineRef.current.style.height = `${progress * 100}%`;
+          progressLineRef.current.style.width = '100%';
+        }
       }
       if (footerRef.current) {
         if (progress > 0.95) footerRef.current.classList.add('visible');
@@ -147,7 +153,15 @@ function App() {
       updateUI(useStore.getState());
     });
 
-    return () => unsubscribe();
+    const handleResize = () => {
+      updateUI(useStore.getState());
+    };
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('resize', handleResize);
+    };
   }, [SECTION_COUNT, mounted]);
 
   if (!mounted) return null
@@ -197,7 +211,6 @@ function App() {
         <div
           ref={progressLineRef}
           className="progress-line-fill"
-          style={{ height: '0%' }}
         />
       </div>
 

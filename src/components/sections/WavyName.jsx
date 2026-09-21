@@ -12,7 +12,7 @@ export default function WavyName() {
   useEffect(() => {
     const updateUI = (state) => {
       const progress = state.progress;
-      const scrollIndex = progress * 13;
+      const scrollIndex = progress * 12;
       const offset = 4000 - (scrollIndex - 0) * 3000;
 
       let opacity = 0;

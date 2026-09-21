@@ -12,16 +12,16 @@ export default function WavyNameReverse() {
   useEffect(() => {
     const updateUI = (state) => {
       const progress = state.progress;
-      const scrollIndex = progress * 13;
-      const offset = -4000 + (scrollIndex - 12) * 3000;
+      const scrollIndex = progress * 12;
+      const offset = -4000 + (scrollIndex - 11) * 3000;
 
       let opacity = 0;
-      if (scrollIndex > 11.2 && scrollIndex < 11.8) {
-        opacity = (scrollIndex - 11.2) / 0.6;
-      } else if (scrollIndex >= 11.8 && scrollIndex <= 12.8) {
+      if (scrollIndex > 10.2 && scrollIndex < 10.8) {
+        opacity = (scrollIndex - 10.2) / 0.6;
+      } else if (scrollIndex >= 10.8 && scrollIndex <= 11.8) {
         opacity = 1;
-      } else if (scrollIndex > 12.8 && scrollIndex < 13.2) {
-        opacity = (13.2 - scrollIndex) / 0.4;
+      } else if (scrollIndex > 11.8 && scrollIndex < 12.2) {
+        opacity = (12.2 - scrollIndex) / 0.4;
       }
 
       if (containerRef.current) containerRef.current.style.opacity = opacity.toString();

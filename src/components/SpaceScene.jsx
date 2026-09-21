@@ -11,17 +11,16 @@ const FLIGHT_PATH = [
   [0, 0],         // 1: (Straight - WavyName)
   [0, 0],         // 2: Pitch (Straight)
   [30, 0],        // 3: About (TURN RIGHT)
-  [30, 0],        // 4: (Straight - Empty space)
-  [30, 0],        // 5: (Straight - Empty space)
-  [30, 0],        // 6: (Straight - Empty space)
-  [30, 0],        // 7: (Straight - Empty space)
-  [30, 0],        // 8: (Straight - Empty space)
-  [30, -20],      // 9: Skills (TURN DOWN)
-  [-30, -20],     // 10: Experience (TURN LEFT HARD)
-  [-30, 0],       // 11: Projects (TURN UP)
-  [-30, 0],       // 12: (Straight - WavyNameReverse)
-  [-30, 0],       // 13: Contact (Straight)
-  [-30, 0]        // 14: Buffer
+  [30, 0],        // 4: TechTitle (Straight)
+  [30, 0],        // 5: tech-stack-2 (Straight)
+  [30, 0],        // 6: tech-stack-3 (Straight)
+  [30, 0],        // 7: tech-stack-4 (Straight)
+  [30, 0],        // 8: tech-stack-5 (Straight)
+  [30, -20],      // 9: Experience (TURN DOWN - Single direction change)
+  [-30, -20],     // 10: Projects (TURN LEFT - Single direction change)
+  [-30, 0],       // 11: WavyNameReverse (TURN UP - Single direction change)
+  [-30, 0],       // 12: Contact (Straight)
+  [-30, 0]        // 13: Buffer
 ];
 
 function CameraController({ mouse }) {
@@ -30,8 +29,8 @@ function CameraController({ mouse }) {
 
   useFrame(({ camera }) => {
     const progress = useStore.getState().progress;
-    // scrollIndex maps progress to our 14 sections (0 to 13)
-    const scrollIndex = progress * 13;
+    // scrollIndex maps progress to our 13 sections (0 to 12 segments)
+    const scrollIndex = progress * 12;
     const currIndex = Math.floor(scrollIndex);
     const nextIndex = Math.min(currIndex + 1, FLIGHT_PATH.length - 1);
     const fraction = scrollIndex - currIndex;
@@ -55,21 +54,7 @@ function CameraController({ mouse }) {
   
     // Apply directional transition to Z (Zoom)
     const steppedScrollIndex = currIndex + easedFraction;
-    const targetZ = 10 - steppedScrollIndex * (180 / 13);
-
-    // Calculate a tilt factor so the ship levels out when at a section (steppedFraction = 0 or 1)
-    // and banks maximally during the transition (steppedFraction = 0.5)
-    const tiltFactor = Math.sin(steppedFraction * Math.PI);
-
-    // Calculate direction vector and apply tilt factor
-    const dirX = (p2[0] - p1[0]) * tiltFactor;
-    const dirY = (p2[1] - p1[1]) * tiltFactor;
-  
-    // Prominent banking when turning, leveling out when reading
-    // Clamp the tilt so long jumps (like About -> Skills) don't barrel roll the ship!
-    const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
-    const baseRotY = clamp(dirX * -0.035, -0.8, 0.8); // Bank left/right
-    const baseRotX = clamp(dirY * 0.035, -0.8, 0.8);  // Pitch up/down
+    const targetZ = 10 - steppedScrollIndex * (180 / 12);
 
     // Mouse controls X/Y physical movement AND tilting (Parallax) - reduced for less prominence
     const mouseOffsetX = mouse ? (mouse.x * 2.5) : 0
@@ -84,9 +69,9 @@ function CameraController({ mouse }) {
     const targetRotX = mouse ? (mouse.y * 0.08) : 0
     const targetRotY = mouse ? (-mouse.x * 0.08) : 0
     
-    // Combine spaceship banking rotation + mouse parallax rotation
-    camera.rotation.x += ((baseRotX + targetRotX) - camera.rotation.x) * 0.025
-    camera.rotation.y += ((baseRotY + targetRotY) - camera.rotation.y) * 0.025
+    camera.rotation.x += (targetRotX - camera.rotation.x) * 0.025
+    camera.rotation.y += (targetRotY - camera.rotation.y) * 0.025
+    camera.rotation.z += (0 - camera.rotation.z) * 0.025
   })
 
   return null
