@@ -1,3 +1,5 @@
+import { Mail, Code2, Briefcase } from 'lucide-react'
+
 export default function Contact() {
   return (
     <div className="contact-content">
@@ -10,13 +12,13 @@ export default function Contact() {
       <div className="contact-email">chiraggajare72@gmail.com</div>
       <div className="contact-links">
         <a href="mailto:chiraggajare72@gmail.com" className="contact-link cl-email">
-          ✉ Send email
+          <Mail size={18} /> Send email
         </a>
         <a href="https://github.com/chiraggajare" target="_blank" rel="noopener noreferrer" className="contact-link cl-github">
-          ⌥ GitHub
+          <Code2 size={18} /> GitHub
         </a>
         <a href="https://www.linkedin.com/in/chiraggajare/" target="_blank" rel="noopener noreferrer" className="contact-link cl-linkedin">
-          in LinkedIn
+          <Briefcase size={18} /> LinkedIn
         </a>
       </div>
       <div className="contact-form">

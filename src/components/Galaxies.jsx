@@ -1,6 +1,7 @@
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { useStore } from '../store/useStore'
 
 function Galaxy({ 
   position, 
@@ -102,19 +103,23 @@ function Galaxy({
           
           gl_Position = projectedPosition;
           
-          // Size attenuation
-          gl_PointSize = 15.0 * (1.0 / -viewPosition.z);
+          // Size attenuation - refined base size for elegant, visible stars without blobby overlap
+          gl_PointSize = 12.0 * (1.0 / -viewPosition.z);
         }
       `,
       fragmentShader: `
         varying vec3 vColor;
 
         void main() {
-          float strength = distance(gl_PointCoord, vec2(0.5));
-          strength = 1.0 - strength;
-          strength = pow(strength, 4.0);
+          vec2 uv = gl_PointCoord - 0.5;
+          float dist = length(uv);
           
-          gl_FragColor = vec4(vColor, strength);
+          if (dist > 0.5) discard;
+          
+          // Exponential falloff for an incredibly soft, glowy dust particle
+          float strength = pow(1.0 - (dist * 2.0), 3.0);
+          
+          gl_FragColor = vec4(vColor, strength * 1.0);
         }
       `
     })
@@ -127,20 +132,20 @@ function Galaxy({
   )
 }
 
-export default function Galaxies({ progress }) {
+export default function Galaxies() {
   const groupRef = useRef()
-  const lastProgress = useRef(progress)
+  const lastProgress = useRef(0)
   const currentSpeed = useRef(1)
   const accumulatedTime = useRef(0)
 
   const galaxyData = useMemo(() => {
     // Generate 15 unique galaxies scattered along the flight path
     return Array.from({ length: 15 }).map(() => {
-      // Scatter X and Y widely so they don't block the camera, but stay visible
-      const randomX = (Math.random() < 0.5 ? -1 : 1) * (100 + Math.random() * 200); 
-      const randomY = (Math.random() < 0.5 ? -1 : 1) * (50 + Math.random() * 150);
-      // Scatter Z from +20 down to -350 so the camera flies *through* them while scrolling!
-      const randomZ = 20 - Math.random() * 370; 
+      // Scatter X and Y further out into deep space so they frame the scene without cluttering the center
+      const randomX = (Math.random() < 0.5 ? -1 : 1) * (150 + Math.random() * 250); 
+      const randomY = (Math.random() < 0.5 ? -1 : 1) * (100 + Math.random() * 200);
+      // Scatter Z from 0 down to -400
+      const randomZ = -Math.random() * 400; 
       
       const outsideColors = ['#2233ff', '#ff22aa', '#aa22ff', '#22ffaa', '#334455'];
       const insideColors = ['#ffbb55', '#ffffff', '#ffaa88', '#bbddff'];
@@ -153,8 +158,8 @@ export default function Galaxies({ progress }) {
           Math.random() * Math.PI  
         ],
         // Randomize the structural DNA of each galaxy!
-        count: 5000 + Math.random() * 10000,           // Some sparse, some dense
-        radius: 30 + Math.random() * 50,               // Some tiny, some massive
+        count: 15000 + Math.random() * 20000,          // Much denser
+        radius: 50 + Math.random() * 80,               // Much larger
         branches: Math.floor(2 + Math.random() * 4),   // 2 to 5 spiral arms
         spin: 0.5 + Math.random() * 2.5,               // Loose or tightly wound spirals
         blackHoleRadius: 1.5 + Math.random() * 3,      // Small or massive black holes
@@ -165,6 +170,7 @@ export default function Galaxies({ progress }) {
   }, [])
 
   useFrame((state, delta) => {
+    const progress = useStore.getState().progress;
     const scrollDelta = Math.abs(progress - lastProgress.current)
     lastProgress.current = progress
     

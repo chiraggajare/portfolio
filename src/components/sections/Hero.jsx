@@ -1,3 +1,5 @@
+import { Sparkle } from 'lucide-react'
+
 export default function Hero() {
   return (
     <div className="hero-layout">
@@ -7,23 +9,27 @@ export default function Hero() {
             <div className="name-outline">CHIRAG</div>
             <div className="name-solid">GAJARE</div>
           </div>
-          <div className="hero-nickname">( FULL-STACK DEV )</div>
+          <div className="hero-nickname">( FULL-STACK ENGINEER )</div>
           
           <ul className="hero-roles">
-            <li><span className="plus">✦</span> Product</li>
-            <li><span className="plus">✦</span> Developer</li>
-            <li><span className="plus">✦</span> Designer</li>
-            <li><span className="plus">✦</span> Innovator</li>
+            <li>
+              <span className="role-icon"><Sparkle size={18} strokeWidth={2.5} /></span> 
+              Developer
+            </li>
+            <li>
+              <span className="role-icon"><Sparkle size={18} strokeWidth={2.5} /></span> 
+              Innovator
+            </li>
+            <li>
+              <span className="role-icon"><Sparkle size={18} strokeWidth={2.5} /></span> 
+              Problem-Solver
+            </li>
+            <li>
+              <span className="role-icon"><Sparkle size={18} strokeWidth={2.5} /></span> 
+              Technologist
+            </li>
           </ul>
 
-          <div className="hero-ctas" style={{ justifyContent: 'flex-start', marginTop: '1.5rem' }}>
-            <a href="https://github.com/chiraggajare" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-              View my work →
-            </a>
-            <a href="mailto:chiraggajare72@gmail.com" className="btn btn-outline">
-              Get in touch
-            </a>
-          </div>
         </div>
 
         <div className="hero-right">

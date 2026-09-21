@@ -1,3 +1,5 @@
+import { Leaf, Terminal, Gift } from 'lucide-react'
+
 export default function Projects() {
   return (
     <div>
@@ -5,7 +7,7 @@ export default function Projects() {
       <h2 style={{ marginBottom: '1.5rem', background: 'linear-gradient(135deg, #fff, #f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Projects.</h2>
       <div className="projects-grid">
         <div className="project-card">
-          <div className="project-thumb thumb-violet"><span>🍃</span></div>
+          <div className="project-thumb thumb-violet"><Leaf size={32} color="#a78bfa" /></div>
           <div className="project-info">
             <h3>PanchaKarma Setu</h3>
             <p>
@@ -20,7 +22,7 @@ export default function Projects() {
         </div>
 
         <div className="project-card">
-          <div className="project-thumb thumb-blue"><span>💻</span></div>
+          <div className="project-thumb thumb-blue"><Terminal size={32} color="#60a5fa" /></div>
           <div className="project-info">
             <h3>LiveCodeX</h3>
             <p>
@@ -35,7 +37,7 @@ export default function Projects() {
         </div>
 
         <div className="project-card">
-          <div className="project-thumb thumb-cyan"><span>🍫</span></div>
+          <div className="project-thumb thumb-cyan"><Gift size={32} color="#22d3ee" /></div>
           <div className="project-info">
             <h3>Chocoholic</h3>
             <p>

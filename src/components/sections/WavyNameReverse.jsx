@@ -1,29 +1,45 @@
-export default function WavyNameReverse({ progress }) {
-  const text = "READY TO COLLABORATE? ✦ LET'S TALK ✦ ".repeat(30)
+import { useEffect, useRef } from 'react'
+import { useStore } from '../../store/useStore'
+
+export default function WavyNameReverse() {
+  const containerRef = useRef(null)
+  const textPathRef = useRef(null)
+  const text = "LET'S CONNECT ✦ ".repeat(30)
 
   // Starts Top-Left, ends Bottom-Right. Drawn Left-to-Right so text is upright.
   const pathData = "M -400 200 C 400 -300, 1000 900, 2400 900"
 
-  // SECTION_COUNT is 12, so scrollIndex ranges from 0 to 11.
-  // WavyNameReverse is at index 10 (Between Projects at 9 and Contact at 11).
-  const scrollIndex = (progress || 0) * 11;
-  const offset = -4000 + (scrollIndex - 10) * 3000;
+  useEffect(() => {
+    const updateUI = (state) => {
+      const progress = state.progress;
+      const scrollIndex = progress * 13;
+      const offset = -4000 + (scrollIndex - 12) * 3000;
 
-  let opacity = 0;
-  if (scrollIndex > 9.2 && scrollIndex < 9.8) {
-    opacity = (scrollIndex - 9.2) / 0.6;
-  } else if (scrollIndex >= 9.8 && scrollIndex <= 10.8) {
-    opacity = 1;
-  } else if (scrollIndex > 10.8 && scrollIndex < 11.2) {
-    opacity = (11.2 - scrollIndex) / 0.4;
-  }
+      let opacity = 0;
+      if (scrollIndex > 11.2 && scrollIndex < 11.8) {
+        opacity = (scrollIndex - 11.2) / 0.6;
+      } else if (scrollIndex >= 11.8 && scrollIndex <= 12.8) {
+        opacity = 1;
+      } else if (scrollIndex > 12.8 && scrollIndex < 13.2) {
+        opacity = (13.2 - scrollIndex) / 0.4;
+      }
+
+      if (containerRef.current) containerRef.current.style.opacity = opacity.toString();
+      if (textPathRef.current) textPathRef.current.setAttribute('startOffset', offset.toString());
+    };
+
+    const unsubscribe = useStore.subscribe(updateUI);
+    updateUI(useStore.getState());
+
+    return () => unsubscribe();
+  }, []);
 
   return (
-    <div className="wavy-name-container" style={{ opacity }}>
+    <div ref={containerRef} className="wavy-name-container" style={{ opacity: 0 }}>
       <svg width="100%" height="100%" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
         <path id="wavy-path-2" d={pathData} fill="none" stroke="none" />
         <text className="wavy-svg-text">
-          <textPath href="#wavy-path-2" startOffset={offset}>
+          <textPath ref={textPathRef} href="#wavy-path-2" startOffset="-4000">
             {text}
           </textPath>
         </text>

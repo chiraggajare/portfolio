@@ -22,7 +22,7 @@ export default function Starfield({ progress }) {
 
       // Make a tiny percentage of stars (2%) noticeably larger and brighter
       sizesArr[i] = Math.random() < 0.02 ? 0.3 + Math.random() * 0.5 : 0.05 + Math.random() * 0.15
-      shapesArr[i] = Math.floor(Math.random() * 4) // 0=circle, 1=diamond, 2=cross, 3=four-point
+      shapesArr[i] = Math.floor(Math.random() * 3) // 0=circle, 1=diamond, 2=four-point
     }
 
     const geo = new THREE.BufferGeometry()
@@ -53,7 +53,8 @@ export default function Starfield({ progress }) {
         void main() {
           vec3 pos = position;
           // Slowly drift all stars towards the camera over time
-          float zOffset = uTime * 6.0; 
+          // Reduced speed from 6.0 to 1.5 for a more majestic, relaxed feel
+          float zOffset = uTime * 1.5; 
           float currentZ = pos.z + zOffset;
           // Wrap them around so they never run out (depth is 250, from 20 to -230)
           float wrappedZ = mod(currentZ + 230.0, 250.0) - 230.0;
@@ -93,11 +94,6 @@ export default function Starfield({ progress }) {
             // Diamond
             float diamond = abs(uv.x) + abs(uv.y);
             alpha = 1.0 - smoothstep(0.3, 0.5, diamond);
-          } else if (shape == 2) {
-            // Cross / plus
-            float cross = min(abs(uv.x), abs(uv.y));
-            alpha = 1.0 - smoothstep(0.05, 0.12, cross);
-            alpha *= 1.0 - smoothstep(0.35, 0.5, d);
           } else {
             // Four-point star
             float star = abs(uv.x * uv.y);

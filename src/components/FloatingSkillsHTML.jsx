@@ -1,17 +1,24 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect, useRef } from 'react'
+import { useStore } from '../store/useStore'
 
 const SKILLS = [
-  "React.js", "Next.js", "Node.js", "Express.js", "MongoDB",
-  "PostgreSQL", "Supabase", "Docker", "AWS", "Google Gemini API",
-  "Socket.io", "Y.js", "Monaco Editor", "Tailwind CSS",
-  "Material UI", "Vite", "MongoDB Atlas", "ImageKit",
-  "GitHub", "Postman"
+  "React.js", "Next.js", "Node.js", "Express.js", "Python",
+  "Django", "MongoDB", "PostgreSQL", "MySQL", "Supabase",
+  "Docker", "AWS", "Google Cloud", "Firebase", "Git",
+  "GitHub", "Postman", "Socket.io", "Y.js", "Monaco Editor",
+  "Tailwind CSS", "Material UI", "Vite", "MongoDB Atlas", 
+  "ImageKit", "Google Gemini API", "Hostinger Website Builder", 
+  "REST APIs", "Cloudflare", "Google Stitch"
 ]
 
-export default function FloatingSkillsHTML({ progress }) {
+export default function FloatingSkillsHTML() {
+  const containerRef = useRef(null)
+  const sceneRef = useRef(null)
+  const skillsRefs = useRef([])
+
   const skillsData = useMemo(() => {
     return SKILLS.map((skill, i) => {
-      const z = 1000 + Math.random() * 2200;
+      const z = 1000 + Math.random() * 5000;
       
       const angle = Math.random() * Math.PI * 2;
       const radius = 15 + Math.random() * 45;
@@ -28,27 +35,76 @@ export default function FloatingSkillsHTML({ progress }) {
     })
   }, [])
 
-  // scrollIndex goes from 0 to 11.
-  const scrollIndex = progress * 11;
-  
-  // Starts at scrollIndex 3.5 (after About section is passed)
-  const cameraZ = Math.max(0, (scrollIndex - 3.5) * 1200);
+  useEffect(() => {
+    const updateUI = (state) => {
+      const progress = state.progress;
+      const scrollIndex = progress * 13;
+      
+      const isVisible = scrollIndex > 3.2 && scrollIndex < 8.5;
+      
+      if (containerRef.current) {
+        if (!isVisible) {
+          containerRef.current.style.display = 'none';
+          return;
+        }
+        containerRef.current.style.display = 'block';
 
-  const isVisible = scrollIndex > 3.2 && scrollIndex < 6.5;
+        let containerOpacity = 0;
+        if (scrollIndex > 3.2 && scrollIndex < 3.8) {
+          containerOpacity = (scrollIndex - 3.2) / 0.6;
+        } else if (scrollIndex >= 3.8 && scrollIndex <= 8.2) {
+          containerOpacity = 1;
+        } else if (scrollIndex > 8.2 && scrollIndex < 8.5) {
+          containerOpacity = (8.5 - scrollIndex) / 0.3;
+        }
+        containerRef.current.style.opacity = containerOpacity.toString();
+      }
 
-  let containerOpacity = 0;
-  if (scrollIndex > 3.2 && scrollIndex < 3.8) {
-    containerOpacity = (scrollIndex - 3.2) / 0.6;
-  } else if (scrollIndex >= 3.8 && scrollIndex <= 6.2) {
-    containerOpacity = 1;
-  } else if (scrollIndex > 6.2 && scrollIndex < 6.5) {
-    containerOpacity = (6.5 - scrollIndex) / 0.3;
-  }
+      const cameraZ = Math.max(0, (scrollIndex - 3.5) * 1200);
+      if (sceneRef.current) {
+        sceneRef.current.style.transform = `translateZ(${cameraZ}px)`;
+      }
 
-  if (!isVisible) return null;
+      skillsRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const data = skillsData[i];
+        const distToCamera = data.z - cameraZ;
+        
+        let opacity = 1;
+        if (distToCamera > 3000) opacity = 0;
+        else if (distToCamera < 100) opacity = Math.max(0, distToCamera / 100);
+
+        if (opacity <= 0) {
+          el.style.opacity = '0';
+          el.style.display = 'none';
+          return;
+        }
+
+        const closeness = Math.max(0, Math.min(1, 1 - (distToCamera - 500) / 1500));
+        const saturation = closeness * 80;
+        const lightness = 100 - (closeness * 25);
+        
+        el.style.display = 'block';
+        el.style.opacity = opacity.toString();
+        
+        // Optimize text shadow by only rendering when reasonably close
+        if (closeness > 0.3) {
+           el.style.textShadow = `0 0 ${closeness * 20 | 0}px hsla(270, ${saturation | 0}%, ${lightness | 0}%, ${closeness * 0.4})`;
+        } else {
+           el.style.textShadow = 'none';
+        }
+      });
+    };
+
+    const unsubscribe = useStore.subscribe(updateUI);
+    updateUI(useStore.getState());
+
+    return () => unsubscribe();
+  }, [skillsData]);
 
   return (
     <div 
+      ref={containerRef}
       className="floating-skills-container"
       style={{
         position: 'fixed',
@@ -57,39 +113,32 @@ export default function FloatingSkillsHTML({ progress }) {
         perspective: '1000px',
         zIndex: 5,
         overflow: 'hidden',
-        opacity: containerOpacity,
+        opacity: 0,
+        display: 'none',
         willChange: 'opacity'
       }}
     >
       <div
+        ref={sceneRef}
         className="floating-skills-scene"
         style={{
           position: 'absolute',
           inset: 0,
           transformStyle: 'preserve-3d',
-          transform: `translateZ(${cameraZ}px)`,
+          transform: 'translateZ(0px)',
           willChange: 'transform'
         }}
       >
         {skillsData.map((data, i) => {
-          const distToCamera = data.z - cameraZ;
-          let opacity = 1;
-          if (distToCamera > 3000) opacity = 0;
-          else if (distToCamera < 100) opacity = Math.max(0, distToCamera / 100);
-
-          // Skip rendering elements that are completely invisible
-          if (opacity <= 0) return null;
-
-          const closeness = Math.max(0, Math.min(1, 1 - (distToCamera - 500) / 1500));
-          
+          const closeness = 0; // initialize
           const saturation = closeness * 80;
           const lightness = 100 - (closeness * 25);
-          
           const color = `hsl(270, ${saturation | 0}%, ${lightness | 0}%)`;
 
           return (
              <div
               key={i}
+              ref={el => skillsRefs.current[i] = el}
               style={{
                 position: 'absolute',
                 left: '50%',
@@ -98,12 +147,11 @@ export default function FloatingSkillsHTML({ progress }) {
                 color: color,
                 fontFamily: "'Space Grotesk', sans-serif",
                 fontWeight: 600,
-                fontSize: '2.5rem',
+                fontSize: 'clamp(1.2rem, 4vw, 2.5rem)',
                 whiteSpace: 'nowrap',
-                opacity: opacity,
+                opacity: 0,
+                display: 'none',
                 willChange: 'transform, opacity',
-                // Removed drop-shadow filter — it's the #1 GPU performance killer
-                textShadow: closeness > 0.3 ? `0 0 ${closeness * 20 | 0}px hsla(270, ${saturation | 0}%, ${lightness | 0}%, ${closeness * 0.4})` : 'none',
               }}
             >
               {data.text}

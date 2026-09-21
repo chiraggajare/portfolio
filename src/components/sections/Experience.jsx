@@ -11,7 +11,7 @@ export default function Experience() {
   return (
     <div className="experience-content" style={{ width: '100%', maxWidth: '800px', margin: '0 auto' }}>
       <span className="section-label" style={{ display: 'block', textAlign: 'center' }}>Where I've worked</span>
-      <h2 style={{ marginBottom: '3rem', textAlign: 'center', background: 'linear-gradient(135deg, #fff, #7c3aed)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Experience.</h2>
+      <h2 style={{ marginBottom: '3rem', textAlign: 'center', background: 'linear-gradient(135deg, #fff, #06b6d4)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Experience.</h2>
       
       <div className="experience-cards" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
         {experiences.map((exp, i) => (
@@ -30,11 +30,11 @@ export default function Experience() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: '#fff' }}>{exp.role}</h3>
-                <div style={{ color: '#a78bfa', fontSize: '1.1rem', fontWeight: 500, marginTop: '0.25rem' }}>{exp.company}</div>
+                <div style={{ color: '#22d3ee', fontSize: '1.1rem', fontWeight: 500, marginTop: '0.25rem' }}>{exp.company}</div>
               </div>
               <span style={{ 
-                background: 'rgba(124, 58, 237, 0.2)', 
-                color: '#d8b4fe', 
+                background: 'rgba(6, 182, 212, 0.2)', 
+                color: '#67e8f9', 
                 padding: '0.4rem 1rem', 
                 borderRadius: '20px',
                 fontSize: '0.9rem',

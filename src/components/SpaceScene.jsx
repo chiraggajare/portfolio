@@ -2,50 +2,75 @@ import { Canvas, useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import Starfield from './Starfield'
 import CosmicClouds from './CosmicClouds'
-import ShootingStars from './ShootingStars'
 import Galaxies from './Galaxies'
-import Supernovas from './Supernovas'
+import ShootingStars from './ShootingStars'
+import { useStore } from '../store/useStore'
 
-function CameraController({ progress, mouse }) {
-  const targetZ = 10 - progress * 180
+const FLIGHT_PATH = [
+  [0, 0],         // 0: Hero
+  [0, 0],         // 1: (Straight - WavyName)
+  [0, 0],         // 2: Pitch (Straight)
+  [30, 0],        // 3: About (TURN RIGHT)
+  [30, 0],        // 4: (Straight - Empty space)
+  [30, 0],        // 5: (Straight - Empty space)
+  [30, 0],        // 6: (Straight - Empty space)
+  [30, 0],        // 7: (Straight - Empty space)
+  [30, 0],        // 8: (Straight - Empty space)
+  [30, -20],      // 9: Skills (TURN DOWN)
+  [-30, -20],     // 10: Experience (TURN LEFT HARD)
+  [-30, 0],       // 11: Projects (TURN UP)
+  [-30, 0],       // 12: (Straight - WavyNameReverse)
+  [-30, 0],       // 13: Contact (Straight)
+  [-30, 0]        // 14: Buffer
+];
 
-  // scrollIndex maps progress to our 12 sections (0 to 11)
-  const scrollIndex = progress * 11
-  
-  const FLIGHT_PATH = [
-    [0, 0],       // 0: Hero
-    [10, 0],      // 1: Travel Right
-    [20, 0],      // 2: Continue Right (Straight)
-    [20, -10],    // 3: Travel Up
-    [20, -20],    // 4: Continue Up (Straight)
-    [10, -20],    // 5: Travel Left
-    [0, -20],     // 6: Continue Left (Straight)
-    [0, -10],     // 7: Travel Down
-    [0, 0],       // 8: Continue Down (Straight)
-    [10, 0],      // 9: Travel Right
-    [20, 0],      // 10: Continue Right (Straight)
-    [20, -10],    // 11: Travel Up
-    [20, -10]     // 12: Buffer
-  ];
-
-  const currIndex = Math.floor(scrollIndex);
-  const nextIndex = Math.min(currIndex + 1, FLIGHT_PATH.length - 1);
-  const fraction = scrollIndex - currIndex;
-  
-  const p1 = FLIGHT_PATH[currIndex];
-  const p2 = FLIGHT_PATH[nextIndex];
-  
-  // Linear interpolation for perfectly straight, directional lines (no swirl)
-  const targetX = p1[0] + (p2[0] - p1[0]) * fraction;
-  const targetY = p1[1] + (p2[1] - p1[1]) * fraction;
-
-  // Calculate direction vector to physically tilt the spaceship into the turn
-  const dirX = p2[0] - p1[0];
-  const dirY = p2[1] - p1[1];
-  const baseRotY = dirX * -0.015; // Bank left/right depending on horizontal travel
-  const baseRotX = dirY * 0.015;  // Pitch up/down depending on vertical travel
+function CameraController({ mouse }) {
+  const currentTiltX = useRef(0)
+  const currentTiltY = useRef(0)
 
   useFrame(({ camera }) => {
+    const progress = useStore.getState().progress;
+    // scrollIndex maps progress to our 14 sections (0 to 13)
+    const scrollIndex = progress * 13;
+    const currIndex = Math.floor(scrollIndex);
+    const nextIndex = Math.min(currIndex + 1, FLIGHT_PATH.length - 1);
+    const fraction = scrollIndex - currIndex;
+  
+    // Make the fraction directional/stepped so space moves rapidly during transitions
+    // and stays relatively still while reading a section
+    let steppedFraction = 0;
+    if (fraction < 0.25) steppedFraction = 0;
+    else if (fraction > 0.75) steppedFraction = 1;
+    else steppedFraction = (fraction - 0.25) / 0.5;
+  
+    // Smooth ease-in-out curve
+    const easedFraction = steppedFraction * steppedFraction * (3 - 2 * steppedFraction);
+  
+    const p1 = FLIGHT_PATH[currIndex];
+    const p2 = FLIGHT_PATH[nextIndex];
+  
+    // Apply directional transition to X and Y
+    const targetX = p1[0] + (p2[0] - p1[0]) * easedFraction;
+    const targetY = p1[1] + (p2[1] - p1[1]) * easedFraction;
+  
+    // Apply directional transition to Z (Zoom)
+    const steppedScrollIndex = currIndex + easedFraction;
+    const targetZ = 10 - steppedScrollIndex * (180 / 13);
+
+    // Calculate a tilt factor so the ship levels out when at a section (steppedFraction = 0 or 1)
+    // and banks maximally during the transition (steppedFraction = 0.5)
+    const tiltFactor = Math.sin(steppedFraction * Math.PI);
+
+    // Calculate direction vector and apply tilt factor
+    const dirX = (p2[0] - p1[0]) * tiltFactor;
+    const dirY = (p2[1] - p1[1]) * tiltFactor;
+  
+    // Prominent banking when turning, leveling out when reading
+    // Clamp the tilt so long jumps (like About -> Skills) don't barrel roll the ship!
+    const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
+    const baseRotY = clamp(dirX * -0.035, -0.8, 0.8); // Bank left/right
+    const baseRotX = clamp(dirY * 0.035, -0.8, 0.8);  // Pitch up/down
+
     // Mouse controls X/Y physical movement AND tilting (Parallax) - reduced for less prominence
     const mouseOffsetX = mouse ? (mouse.x * 2.5) : 0
     const mouseOffsetY = mouse ? (mouse.y * 2.5) : 0
@@ -67,7 +92,7 @@ function CameraController({ progress, mouse }) {
   return null
 }
 
-export default function SpaceScene({ progress, mouse }) {
+export default function SpaceScene({ mouse }) {
   return (
     <div className="space-canvas">
       <Canvas
@@ -80,11 +105,14 @@ export default function SpaceScene({ progress, mouse }) {
         }}
         style={{ background: '#000000' }}
       >
-        <CameraController progress={progress} mouse={mouse} />
-        <Starfield progress={progress} />
-        <CosmicClouds progress={progress} />
-        <Galaxies progress={progress} />
-        <Supernovas progress={progress} />
+        {/* Soft cosmic ambient light */}
+        <ambientLight intensity={0.2} />
+        
+        <CameraController mouse={mouse} />
+        
+        <Starfield />
+        <CosmicClouds />
+        <Galaxies />
         <ShootingStars />
       </Canvas>
     </div>

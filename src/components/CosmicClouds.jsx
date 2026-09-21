@@ -2,63 +2,112 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-const CLOUD_COUNT = 18
+const CLOUD_COUNT = 100
 
-export default function CosmicClouds({ progress }) {
+export default function CosmicClouds() {
   const groupRef = useRef()
 
   const clouds = useMemo(() => {
     const items = []
+    
+    // Generate 15 random chunks throughout the entire space (including the beginning)
+    const clusterCenters = Array.from({ length: 15 }).map(() => ({
+      x: (Math.random() - 0.5) * 150,
+      y: (Math.random() - 0.5) * 100,
+      z: 20 - Math.random() * 260 // From z=20 (right in front of camera) down to -240
+    }));
+
     const colors = [
-      new THREE.Color(0x7c3aed).multiplyScalar(0.15), // violet
-      new THREE.Color(0x3b82f6).multiplyScalar(0.12), // blue
-      new THREE.Color(0x06b6d4).multiplyScalar(0.1),  // cyan
-      new THREE.Color(0xf472b6).multiplyScalar(0.08), // pink
-      new THREE.Color(0x8b5cf6).multiplyScalar(0.1),  // purple
+      new THREE.Color(0x7c3aed).multiplyScalar(0.35), // violet
+      new THREE.Color(0x3b82f6).multiplyScalar(0.3),  // blue
+      new THREE.Color(0x06b6d4).multiplyScalar(0.25), // cyan
+      new THREE.Color(0xf472b6).multiplyScalar(0.25), // pink
+      new THREE.Color(0x8b5cf6).multiplyScalar(0.3),  // purple
     ]
 
     for (let i = 0; i < CLOUD_COUNT; i++) {
-      const theta = Math.random() * Math.PI * 2
-      const radius = 8 + Math.random() * 25
+      // 80% form massive deep space nebula clusters, 20% scatter ambiently
+      const isCluster = Math.random() < 0.8
+      
+      let x, y, z;
+      if (isCluster) {
+        // Group into the random chunks
+        const clusterIndex = Math.floor(Math.random() * clusterCenters.length);
+        const center = clusterCenters[clusterIndex];
+        
+        // Volumetric spread around the cluster center
+        x = center.x + (Math.random() - 0.5) * 60;
+        y = center.y + (Math.random() - 0.5) * 50;
+        z = center.z + (Math.random() - 0.5) * 60;
+      } else {
+        // Ambient background dust
+        x = (Math.random() - 0.5) * 200;
+        y = (Math.random() - 0.5) * 100;
+        z = -Math.random() * 250;
+      }
+
       items.push({
-        position: [
-          Math.cos(theta) * radius,
-          (Math.random() - 0.5) * 15,
-          -10 - Math.random() * 160,
-        ],
-        scale: 4 + Math.random() * 12,
+        position: [x, y, z],
+        scale: 60 + Math.random() * 80, // Massive clouds
         color: colors[Math.floor(Math.random() * colors.length)],
-        rotationSpeed: (Math.random() - 0.5) * 0.1,
-        opacity: 0.03 + Math.random() * 0.06,
+        rotationSpeed: (Math.random() - 0.5) * 0.05, // Slower, majestic rotation
+        opacity: 0.04 + Math.random() * 0.06, // Highly visible clouds
       })
     }
     return items
   }, [])
 
   const material = useMemo(() => {
-    // Create a soft radial gradient texture for the clouds
+    // Create an irregular, wispy noise-like texture by overlapping several soft radial gradients
+    // High-definition 512x512 canvas to prevent pixelation on massive clouds
     const canvas = document.createElement('canvas')
-    canvas.width = 128
-    canvas.height = 128
+    canvas.width = 512
+    canvas.height = 512
     const ctx = canvas.getContext('2d')
-    const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64)
-    gradient.addColorStop(0, 'rgba(255,255,255,1)')
-    gradient.addColorStop(0.3, 'rgba(255,255,255,0.5)')
-    gradient.addColorStop(0.7, 'rgba(255,255,255,0.1)')
-    gradient.addColorStop(1, 'rgba(255,255,255,0)')
-    ctx.fillStyle = gradient
-    ctx.fillRect(0, 0, 128, 128)
+    
+    // Ensure gradients NEVER touch the edges of the 512x512 canvas to prevent hard box edges
+    for (let i = 0; i < 4; i++) {
+      const offsetX = 256 + (Math.random() - 0.5) * 80; // max 296
+      const offsetY = 256 + (Math.random() - 0.5) * 80;
+      const radius = 100 + Math.random() * 100; // max 200. 296 + 200 = 496 (safely within 512)
+      
+      const gradient = ctx.createRadialGradient(offsetX, offsetY, 0, offsetX, offsetY, radius)
+      gradient.addColorStop(0, 'rgba(255,255,255,0.8)')
+      gradient.addColorStop(0.4, 'rgba(255,255,255,0.25)')
+      gradient.addColorStop(1, 'rgba(255,255,255,0)')
+      
+      ctx.fillStyle = gradient
+      ctx.fillRect(0, 0, 512, 512)
+    }
+    
     const texture = new THREE.CanvasTexture(canvas)
     return texture
   }, [])
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock, camera }) => {
     if (groupRef.current) {
       groupRef.current.children.forEach((child, i) => {
         const time = clock.getElapsedTime()
         child.rotation.z += clouds[i].rotationSpeed * 0.01
         // Subtle floating motion
         child.position.y += Math.sin(time * 0.3 + i) * 0.002
+        
+        // Butter-smooth camera proximity fading to prevent choppy clipping while scrolling
+        const zDist = camera.position.z - child.position.z;
+        let targetOpacity = clouds[i].opacity;
+        
+        if (zDist < 0) {
+           // Behind camera
+           targetOpacity = 0;
+        } else if (zDist < 120) {
+           // Getting close, fade out smoothly so it doesn't clip
+           targetOpacity = clouds[i].opacity * (zDist / 120);
+        }
+        
+        // Apply opacity smoothly
+        if (child.material) {
+           child.material.opacity += (targetOpacity - child.material.opacity) * 0.1;
+        }
       })
     }
   })

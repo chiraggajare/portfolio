@@ -2,7 +2,7 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 
-const SHOOTING_STAR_COUNT = 5
+const SHOOTING_STAR_COUNT = 15
 // Pre-allocate reusable vectors to avoid GC pressure
 const _tempVec = new THREE.Vector3(0, 1, 0)
 

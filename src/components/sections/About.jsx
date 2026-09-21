@@ -6,7 +6,8 @@ export default function About() {
         <h2>Code, coffee,<br />and curiosity.</h2>
         <p>
           I'm a full-stack developer with a passion for building products that
-          people actually enjoy using. I care deeply about clean code,
+          people actually enjoy using. <br /><br />
+          I care deeply about clean code,
           thoughtful architecture, and the tiny details that make software feel great.
         </p>
         <p>
