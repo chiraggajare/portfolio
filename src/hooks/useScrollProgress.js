@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useStore } from '../store/useStore'
 
-const SECTION_COUNT = 14
+const SECTION_COUNT = 13
 const LERP_FACTOR = 0.04 // Smoother manual scroll interpolation
 const SCROLL_SENSITIVITY = 0.00010
 
@@ -15,7 +15,7 @@ export default function useScrollProgress() {
   const lastActiveSectionRef = useRef(0)
 
   // Only these 7 sections are checkpoints — everything else is a flyover transition
-  const TRUE_SECTIONS = [0, 2, 3, 9, 10, 11, 13];
+  const TRUE_SECTIONS = [0, 2, 3, 4, 9, 10, 12];
 
   const navigateTo = useCallback((sectionIndex) => {
     targetRef.current = Math.max(0, Math.min(1, sectionIndex / (SECTION_COUNT - 1)))

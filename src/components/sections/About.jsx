@@ -6,7 +6,7 @@ export default function About() {
         <h2>Code, coffee,<br />and curiosity.</h2>
         <p>
           I'm a full-stack developer with a passion for building products that
-          people actually enjoy using. <br /><br />
+          people actually enjoy using. <br /> <br />
           I care deeply about clean code,
           thoughtful architecture, and the tiny details that make software feel great.
         </p>
@@ -14,9 +14,7 @@ export default function About() {
           When I'm not writing code, you'll find me tinkering with side
           projects, reading about systems design, or exploring the outdoors.
         </p>
-        <a href="mailto:chiraggajare72@gmail.com" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-          Let's work together →
-        </a>
+
       </div>
       <div className="fun-facts-grid">
         <div className="fun-fact ff-violet">

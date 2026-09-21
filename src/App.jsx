@@ -10,7 +10,7 @@ import Hero from './components/sections/Hero'
 import About from './components/sections/About'
 import ElevatorPitch from './components/sections/ElevatorPitch'
 import WavyName from './components/sections/WavyName'
-import Skills from './components/sections/Skills'
+import TechTitle from './components/sections/TechTitle'
 import Experience from './components/sections/Experience'
 import WavyNameReverse from './components/sections/WavyNameReverse'
 import Projects from './components/sections/Projects'
@@ -63,12 +63,11 @@ function App() {
     { component: WavyName, id: 'name' },
     { component: ElevatorPitch, id: 'pitch' },
     { component: About, id: 'about' },
-    { component: () => null, id: 'tech-stack-1' },
+    { component: TechTitle, id: 'tech-title' },
     { component: () => null, id: 'tech-stack-2' },
     { component: () => null, id: 'tech-stack-3' },
     { component: () => null, id: 'tech-stack-4' },
     { component: () => null, id: 'tech-stack-5' },
-    { component: Skills, id: 'skills' },
     { component: Experience, id: 'experience' },
     { component: Projects, id: 'projects' },
     { component: WavyNameReverse, id: 'name-reverse' },

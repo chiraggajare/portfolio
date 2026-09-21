@@ -7,10 +7,10 @@ export default function Navbar({ activeSection, navigateTo }) {
     { name: 'Home', index: 0 },
     { name: 'Pitch', index: 2 },
     { name: 'About', index: 3 },
-    { name: 'Skills', index: 9 },
-    { name: 'Experience', index: 10 },
-    { name: 'Projects', index: 11 },
-    { name: 'Contact', index: 13 },
+    { name: 'Skills', index: 4 },
+    { name: 'Experience', index: 9 },
+    { name: 'Projects', index: 10 },
+    { name: 'Contact', index: 12 },
   ]
 
   const handleNavClick = (index) => {

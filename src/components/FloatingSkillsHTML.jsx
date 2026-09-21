@@ -38,9 +38,9 @@ export default function FloatingSkillsHTML() {
   useEffect(() => {
     const updateUI = (state) => {
       const progress = state.progress;
-      const scrollIndex = progress * 13;
+      const scrollIndex = progress * 12;
       
-      const isVisible = scrollIndex > 3.2 && scrollIndex < 8.5;
+      const isVisible = scrollIndex > 4.2 && scrollIndex < 8.5;
       
       if (containerRef.current) {
         if (!isVisible) {
@@ -50,9 +50,9 @@ export default function FloatingSkillsHTML() {
         containerRef.current.style.display = 'block';
 
         let containerOpacity = 0;
-        if (scrollIndex > 3.2 && scrollIndex < 3.8) {
-          containerOpacity = (scrollIndex - 3.2) / 0.6;
-        } else if (scrollIndex >= 3.8 && scrollIndex <= 8.2) {
+        if (scrollIndex > 4.2 && scrollIndex < 4.8) {
+          containerOpacity = (scrollIndex - 4.2) / 0.6;
+        } else if (scrollIndex >= 4.8 && scrollIndex <= 8.2) {
           containerOpacity = 1;
         } else if (scrollIndex > 8.2 && scrollIndex < 8.5) {
           containerOpacity = (8.5 - scrollIndex) / 0.3;
