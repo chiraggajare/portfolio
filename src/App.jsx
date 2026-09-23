@@ -97,7 +97,7 @@ function App() {
         else footerRef.current.classList.remove('visible');
       }
       if (indicatorRef.current) {
-        if (progress > 0.02) indicatorRef.current.classList.add('hidden');
+        if (progress > 0.005) indicatorRef.current.classList.add('hidden');
         else indicatorRef.current.classList.remove('hidden');
       }
 
@@ -217,7 +217,7 @@ function App() {
       </div>
 
       <div ref={footerRef} className="footer-text">
-        Designed & built by Chirag Gajare · 2025 · Crafted with React & Three.js
+        Designed & built by Chirag Gajare · 2026
       </div>
 
       <div className={`cloud-toggle-wrapper ${showCosmicClouds ? 'active' : ''}`} onClick={toggleCosmicClouds} title="Toggle Cosmic Clouds">
