@@ -2,7 +2,7 @@ export default function Projects() {
   return (
     <div>
       <span className="section-label">Things I've built</span>
-      <h2 style={{ marginBottom: '1.5rem', background: 'linear-gradient(135deg, #fff, #f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Projects.</h2>
+      <h2 style={{ marginBottom: '1.5rem', background: 'linear-gradient(135deg, #fff, #f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Selected Projects.</h2>
       <div className="projects-grid">
         <div className="project-card">
           <div className="project-thumb thumb-violet">
