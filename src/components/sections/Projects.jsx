@@ -1,5 +1,3 @@
-import { Leaf, Terminal, Gift } from 'lucide-react'
-
 export default function Projects() {
   return (
     <div>
@@ -7,7 +5,9 @@ export default function Projects() {
       <h2 style={{ marginBottom: '1.5rem', background: 'linear-gradient(135deg, #fff, #f472b6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Projects.</h2>
       <div className="projects-grid">
         <div className="project-card">
-          <div className="project-thumb thumb-violet"><Leaf size={32} color="#a78bfa" /></div>
+          <div className="project-thumb thumb-violet">
+            <img src="/panchkarmasetu-logo.png" alt="Panchkarma Setu Logo" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
+          </div>
           <div className="project-info">
             <h3>PanchaKarma Setu</h3>
             <p>
@@ -15,14 +15,16 @@ export default function Projects() {
               treatments with a high-performance, responsive UI.
             </p>
             <div className="project-links">
-              <a href="#" className="link-btn link-btn-primary">Live ↗</a>
+              <a href="https://panchkarmasetu.onrender.com/" target="_blank" rel="noopener noreferrer" className="link-btn link-btn-primary">Live ↗</a>
               <a href="https://github.com/chiraggajare/PanchkarmaSetu" target="_blank" rel="noopener noreferrer" className="link-btn link-btn-ghost">GitHub</a>
             </div>
           </div>
         </div>
 
         <div className="project-card">
-          <div className="project-thumb thumb-blue"><Terminal size={32} color="#60a5fa" /></div>
+          <div className="project-thumb thumb-blue">
+            <img src="/livecodex-logo.png" alt="LiveCodeX Logo" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
+          </div>
           <div className="project-info">
             <h3>LiveCodeX</h3>
             <p>
@@ -30,23 +32,8 @@ export default function Projects() {
               brainstorm on code-snippets together in personal virtual rooms!
             </p>
             <div className="project-links">
-              <a href="#" className="link-btn link-btn-primary">Live ↗</a>
+              <a href="https://livecodex-awlr.onrender.com/home" target="_blank" rel="noopener noreferrer" className="link-btn link-btn-primary">Live ↗</a>
               <a href="https://github.com/chiraggajare/LiveCodeX" target="_blank" rel="noopener noreferrer" className="link-btn link-btn-ghost">GitHub</a>
-            </div>
-          </div>
-        </div>
-
-        <div className="project-card">
-          <div className="project-thumb thumb-cyan"><Gift size={32} color="#22d3ee" /></div>
-          <div className="project-info">
-            <h3>Chocoholic</h3>
-            <p>
-              A chocolate gifting e-commerce website for selling premium and
-              imported chocolates as gifts on your special occasions!
-            </p>
-            <div className="project-links">
-              <a href="#" className="link-btn link-btn-primary">Live ↗</a>
-              <a href="https://github.com/chiraggajare/chocoholic" target="_blank" rel="noopener noreferrer" className="link-btn link-btn-ghost">GitHub</a>
             </div>
           </div>
         </div>
@@ -54,3 +41,4 @@ export default function Projects() {
     </div>
   )
 }
+
