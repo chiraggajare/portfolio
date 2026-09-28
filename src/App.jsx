@@ -113,7 +113,7 @@ function App() {
           return;
         }
 
-        const isActive = Math.abs(dist) < 0.5;
+        const isActive = Math.abs(dist) < 0.95;
         const isTransitionText = id === 'name' || id === 'name-reverse';
         const isMobile = window.innerWidth < 768;
 

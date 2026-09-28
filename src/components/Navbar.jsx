@@ -1,7 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function Navbar({ activeSection, navigateTo }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const navItems = [
     { name: 'Home', index: 0 },
@@ -39,7 +46,7 @@ export default function Navbar({ activeSection, navigateTo }) {
         <span className="hamburger-line"></span>
       </button>
 
-      {/* Nav Links Overlay */}
+      {/* Nav Links Dropdown */}
       <div className={`nav-links-container ${isMenuOpen ? 'open' : ''}`}>
         <ul className="nav-links">
           {navItems.slice(1).map(({ name, index }) => (
