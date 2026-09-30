@@ -68,7 +68,7 @@ export default function Contact() {
               type="text"
               name="name"
               className="form-input"
-              placeholder="John Doe"
+              placeholder="Tony Stark"
               value={formData.name}
               onChange={handleChange}
               required
