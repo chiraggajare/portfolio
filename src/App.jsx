@@ -23,13 +23,13 @@ function App() {
   const [mounted, setMounted] = useState(false)
   const showCosmicClouds = useStore((state) => state.showCosmicClouds)
   const toggleCosmicClouds = useStore((state) => state.toggleCosmicClouds)
-  
+
   const wrapperRef = useRef(null)
   const sectionsRef = useRef([])
   const progressLineRef = useRef(null)
   const footerRef = useRef(null)
   const indicatorRef = useRef(null)
-  
+
   const rafMouseRef = useRef(null)
   const currentMouseX = useRef(0)
   const currentMouseY = useRef(0)
@@ -149,7 +149,7 @@ function App() {
     if (!mounted) return;
 
     const unsubscribe = useStore.subscribe(updateUI);
-    
+
     // Use requestAnimationFrame to ensure the DOM refs are fully populated before painting
     requestAnimationFrame(() => {
       updateUI(useStore.getState());

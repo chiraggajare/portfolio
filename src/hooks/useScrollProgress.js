@@ -33,7 +33,7 @@ export default function useScrollProgress() {
       interactionTimeout = setTimeout(() => {
         const segments = SECTION_COUNT - 1;
         const currentSegment = targetRef.current * segments;
-        
+
         // Always snap to the absolute nearest TRUE section checkpoint
         const nearestTrueSection = TRUE_SECTIONS.reduce((prev, curr) => {
           return (Math.abs(curr - currentSegment) < Math.abs(prev - currentSegment) ? curr : prev);
@@ -75,27 +75,27 @@ export default function useScrollProgress() {
 
     const animate = () => {
       const diff = targetRef.current - currentRef.current
-      
+
       // Navbar click: fast and responsive jump (0.06)
       // Magnetic snap: gentle relaxed glide (0.025)
       // Manual scroll: responsive (0.04)
       let lerp = LERP_FACTOR
       if (isNavigatingRef.current) lerp = 0.06
       else if (isSnappingRef.current) lerp = 0.025
-      
+
       currentRef.current += diff * lerp
-      
+
       // Snap when very close and hand back control
       if (Math.abs(diff) < 0.0001) {
         currentRef.current = targetRef.current
         isNavigatingRef.current = false
         isSnappingRef.current = false
       }
-      
+
       // Only trigger updates if there is actual movement
       if (Math.abs(diff) > 0.000001) {
         useStore.getState().setProgress(currentRef.current)
-        
+
         const currentSegment = currentRef.current * (SECTION_COUNT - 1)
         const nearestTrueSection = TRUE_SECTIONS.reduce((prev, curr) => {
           return (Math.abs(curr - currentSegment) < Math.abs(prev - currentSegment) ? curr : prev);
@@ -105,7 +105,7 @@ export default function useScrollProgress() {
           setActiveSection(nearestTrueSection)
         }
       }
-      
+
       rafRef.current = requestAnimationFrame(animate)
     }
 

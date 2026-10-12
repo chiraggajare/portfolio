@@ -34,24 +34,24 @@ function CameraController({ mouse }) {
     const currIndex = Math.floor(scrollIndex);
     const nextIndex = Math.min(currIndex + 1, FLIGHT_PATH.length - 1);
     const fraction = scrollIndex - currIndex;
-  
+
     // Make the fraction directional/stepped so space moves rapidly during transitions
     // and stays relatively still while reading a section
     let steppedFraction = 0;
     if (fraction < 0.25) steppedFraction = 0;
     else if (fraction > 0.75) steppedFraction = 1;
     else steppedFraction = (fraction - 0.25) / 0.5;
-  
+
     // Smooth ease-in-out curve
     const easedFraction = steppedFraction * steppedFraction * (3 - 2 * steppedFraction);
-  
+
     const p1 = FLIGHT_PATH[currIndex];
     const p2 = FLIGHT_PATH[nextIndex];
-  
+
     // Apply directional transition to X and Y
     const targetX = p1[0] + (p2[0] - p1[0]) * easedFraction;
     const targetY = p1[1] + (p2[1] - p1[1]) * easedFraction;
-  
+
     // Apply directional transition to Z (Zoom)
     const steppedScrollIndex = currIndex + easedFraction;
     const targetZ = 10 - steppedScrollIndex * (180 / 12);
@@ -64,11 +64,11 @@ function CameraController({ mouse }) {
     camera.position.z += (targetZ - camera.position.z) * 0.025
     camera.position.x += ((targetX + mouseOffsetX) - camera.position.x) * 0.025
     camera.position.y += ((targetY + mouseOffsetY) - camera.position.y) * 0.025
-    
+
     // Softer tilt
     const targetRotX = mouse ? (mouse.y * 0.08) : 0
     const targetRotY = mouse ? (-mouse.x * 0.08) : 0
-    
+
     camera.rotation.x += (targetRotX - camera.rotation.x) * 0.025
     camera.rotation.y += (targetRotY - camera.rotation.y) * 0.025
     camera.rotation.z += (0 - camera.rotation.z) * 0.025
@@ -94,9 +94,9 @@ export default function SpaceScene({ mouse }) {
       >
         {/* Soft cosmic ambient light */}
         <ambientLight intensity={0.2} />
-        
+
         <CameraController mouse={mouse} />
-        
+
         <Starfield />
         {showCosmicClouds && <CosmicClouds />}
         <Galaxies />

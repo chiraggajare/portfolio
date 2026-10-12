@@ -5,7 +5,7 @@ const getInitialCosmicClouds = () => {
   if (saved !== null) {
     return JSON.parse(saved);
   }
-  return true; // Default
+  return false; // Default off
 };
 
 export const useStore = create((set) => ({
