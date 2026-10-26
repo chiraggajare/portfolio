@@ -16,13 +16,25 @@ import WavyNameReverse from './components/sections/WavyNameReverse'
 import Projects from './components/sections/Projects'
 import Contact from './components/sections/Contact'
 import FloatingSkillsHTML from './components/FloatingSkillsHTML'
+import CosmicCloudsToggle from './components/CosmicCloudsToggle'
 
 function App() {
+  const isStandaloneToggle = typeof window !== 'undefined' && 
+    (window.location.pathname === '/toggle' || window.location.search.includes('toggle'));
+
   const { activeSection, navigateTo, SECTION_COUNT } = useScrollProgress()
   const mouse = useMousePosition()
   const [mounted, setMounted] = useState(false)
   const showCosmicClouds = useStore((state) => state.showCosmicClouds)
   const toggleCosmicClouds = useStore((state) => state.toggleCosmicClouds)
+
+  if (isStandaloneToggle) {
+    return (
+      <main style={{ minHeight: '100vh', width: '100vw', background: '#000', display: 'grid', placeItems: 'center', margin: 0, fontFamily: '"Montserrat", system-ui, sans-serif' }}>
+        <CosmicCloudsToggle checked={showCosmicClouds} onChange={toggleCosmicClouds} />
+      </main>
+    );
+  }
 
   const wrapperRef = useRef(null)
   const sectionsRef = useRef([])
@@ -220,8 +232,8 @@ function App() {
         Designed & built by Chirag Gajare · 2026
       </div>
 
-      <div className={`cloud-toggle-wrapper ${showCosmicClouds ? 'active' : ''}`} onClick={toggleCosmicClouds} title="Toggle Cosmic Clouds">
-        <span className="cloud-toggle-label">Cosmic Clouds</span>
+      <div className="cosmic-clouds-toggle-anchor">
+        <CosmicCloudsToggle checked={showCosmicClouds} onChange={toggleCosmicClouds} />
       </div>
     </>
   )

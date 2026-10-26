@@ -35,12 +35,14 @@ export default function Hero() {
         <div className="hero-right">
           <div className="hero-photo-container">
             <div className="photo-ring" />
-            <img
-              className="hero-photo"
-              src="https://res.cloudinary.com/doqqc1ogd/image/upload/q_auto/f_auto/v1777907423/pic3_urqwob.png"
-              alt="Chirag Gajare"
-              loading="eager"
-            />
+            <div className="photo-frame">
+              <img
+                className="hero-photo"
+                src="https://res.cloudinary.com/doqqc1ogd/image/upload/q_auto/f_auto/v1777907423/pic3_urqwob.png"
+                alt="Chirag Gajare"
+                loading="eager"
+              />
+            </div>
           </div>
         </div>
       </div>

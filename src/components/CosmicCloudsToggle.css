@@ -1,0 +1,95 @@
+.toggle {
+  /* size controls: change these to resize */
+  --w: 72px;
+  --h: 36px;
+  --knob: 28px;
+  --pad: 3px; /* (h - 2px border - knob) / 2 */
+
+  --deep: #0a0620;
+  --nebula-a: #6a3df0;
+  --nebula-b: #e0489c;
+  --nebula-c: #2fd0e0;
+
+  position: relative;
+  box-sizing: border-box;
+  width: var(--w);
+  height: var(--h);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background:
+    radial-gradient(1px 1px at 22% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 40% 72%, #fff9, transparent),
+    radial-gradient(1.5px 1.5px at 60% 26%, #fff, transparent),
+    radial-gradient(1px 1px at 82% 64%, #fff9, transparent),
+    radial-gradient(1px 1px at 30% 54%, #fff7, transparent),
+    var(--deep);
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 0.5s, box-shadow 0.5s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.toggle *,
+.toggle *::before,
+.toggle *::after {
+  box-sizing: border-box;
+}
+
+.toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s;
+  background:
+    radial-gradient(40px 24px at 25% 30%, var(--nebula-a), transparent 70%),
+    radial-gradient(44px 24px at 70% 80%, var(--nebula-b), transparent 70%),
+    radial-gradient(34px 20px at 90% 20%, var(--nebula-c), transparent 70%);
+  mix-blend-mode: screen;
+}
+
+.toggle[aria-checked="true"] {
+  border-color: rgba(190, 170, 255, 0.7);
+  box-shadow: 0 0 12px rgba(106, 61, 240, 0.55), 0 0 28px rgba(224, 72, 156, 0.25);
+}
+
+.toggle[aria-checked="true"]::before {
+  opacity: 0.75;
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--nebula-c);
+  outline-offset: 3px;
+}
+
+.toggle .knob {
+  position: absolute;
+  top: var(--pad);
+  left: var(--pad);
+  width: var(--knob);
+  height: var(--knob);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 36% 38%, #0003 0 3px, transparent 4px),
+    radial-gradient(circle at 66% 62%, #0003 0 3px, transparent 4px),
+    radial-gradient(circle at 60% 24%, #0002 0 2px, transparent 3px),
+    radial-gradient(circle at 32% 28%, #f2f2f8, #a9a9c2 70%, #6d6d88);
+  box-shadow: inset -3px -3px 6px rgba(0, 0, 0, 0.45);
+  transition: transform 0.5s cubic-bezier(0.6, 0, 0.2, 1), background 0.5s, box-shadow 0.5s;
+}
+
+.toggle[aria-checked="true"] .knob {
+  /* width - border(2px) - left pad - right pad - knob */
+  transform: translateX(calc(var(--w) - 2px - var(--pad) * 2 - var(--knob)));
+  background: radial-gradient(circle at 32% 28%, #ffe3a8, #ff8a4c 55%, #b8268f);
+  box-shadow: inset -4px -4px 8px rgba(40, 0, 60, 0.5), 0 0 12px rgba(255, 150, 80, 0.75);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle,
+  .toggle::before,
+  .toggle .knob {
+    transition: none;
+  }
+}

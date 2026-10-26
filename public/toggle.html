@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cosmic Clouds toggle</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --void:#000;
+  --deep:#0a0620;
+  --nebula-a:#6a3df0;
+  --nebula-b:#e0489c;
+  --nebula-c:#2fd0e0;
+  --star:#fff;
+  --text:#fff;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+body{background:var(--void);display:grid;place-items:center;font-family:"Montserrat",system-ui,sans-serif}
+
+.toggle{
+  position:relative;width:min(300px,88vw);height:70px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.22);
+  background:
+    radial-gradient(1px 1px at 18% 30%,#fff,transparent),
+    radial-gradient(1px 1px at 42% 72%,#fff9,transparent),
+    radial-gradient(1.5px 1.5px at 66% 24%,#fff,transparent),
+    radial-gradient(1px 1px at 88% 64%,#fff9,transparent),
+    radial-gradient(1px 1px at 30% 54%,#fff7,transparent),
+    var(--deep);
+  color:var(--text);cursor:pointer;padding:0;overflow:hidden;
+  transition:border-color .5s,box-shadow .5s;
+  -webkit-tap-highlight-color:transparent;
+}
+.toggle::before{
+  content:"";position:absolute;inset:0;opacity:0;transition:opacity .6s;
+  background:
+    radial-gradient(120px 60px at 25% 30%,var(--nebula-a),transparent 70%),
+    radial-gradient(130px 60px at 70% 80%,var(--nebula-b),transparent 70%),
+    radial-gradient(100px 50px at 90% 20%,var(--nebula-c),transparent 70%);
+  mix-blend-mode:screen;
+}
+.toggle[aria-checked="true"]{border-color:rgba(190,170,255,.7);box-shadow:0 0 28px rgba(106,61,240,.55),0 0 60px rgba(224,72,156,.25)}
+.toggle[aria-checked="true"]::before{opacity:.75}
+.toggle:focus-visible{outline:2px solid var(--nebula-c);outline-offset:4px}
+
+.label{
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-weight:600;font-size:15px;letter-spacing:.24em;text-indent:.24em;white-space:nowrap;
+  padding:0;transition:transform .5s cubic-bezier(.6,0,.2,1);
+  transform:translateX(18px);
+}
+.toggle[aria-checked="true"] .label{transform:translateX(-18px)}
+
+.knob{
+  position:absolute;top:6px;left:6px;width:56px;height:56px;border-radius:50%;
+  background:
+    radial-gradient(circle at 36% 38%,#0003 0 7px,transparent 8px),
+    radial-gradient(circle at 66% 62%,#0003 0 5px,transparent 6px),
+    radial-gradient(circle at 60% 24%,#0002 0 4px,transparent 5px),
+    radial-gradient(circle at 32% 28%,#f2f2f8,#a9a9c2 70%,#6d6d88);
+  box-shadow:inset -6px -6px 12px rgba(0,0,0,.45);
+  transition:transform .5s cubic-bezier(.6,0,.2,1),background .5s,box-shadow .5s;
+}
+.toggle[aria-checked="true"] .knob{
+  transform:translateX(calc(min(300px,88vw) - 68px));
+  background:
+    radial-gradient(circle at 32% 28%,#ffe3a8,#ff8a4c 55%,#b8268f);
+  box-shadow:inset -7px -7px 14px rgba(40,0,60,.5),0 0 22px rgba(255,150,80,.75);
+}
+@media (prefers-reduced-motion:reduce){
+  .toggle,.toggle::before,.label,.knob{transition:none}
+}
+</style>
+</head>
+<body>
+<button class="toggle" role="switch" aria-checked="false" aria-label="Cosmic Clouds">
+  <span class="label">COSMIC CLOUDS</span>
+  <span class="knob"></span>
+</button>
+<script>
+const t=document.querySelector('.toggle');
+t.addEventListener('click',()=>t.setAttribute('aria-checked',t.getAttribute('aria-checked')!=='true'));
+</script>
+</body>
+</html>
