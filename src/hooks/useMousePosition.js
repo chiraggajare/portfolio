@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 
 export default function useMousePosition() {
   const posRef = useRef({ x: 0, y: 0 })

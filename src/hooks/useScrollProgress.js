@@ -1,108 +1,139 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useStore } from '../store/useStore'
+import { isTypingTarget } from '../utils/math'
 
 const SECTION_COUNT = 13
-const LERP_FACTOR = 0.04 // Smoother manual scroll interpolation
-const SCROLL_SENSITIVITY = 0.00010
+const SEGMENTS = SECTION_COUNT - 1
+const SCROLL_SENSITIVITY = 0.0001
+
+// Damping rates (per second). Frame-rate independent: the same feel at 60Hz and 120Hz.
+const RATE_SCROLL = 2.6   // manual wheel / touch
+const RATE_NAV = 3.6      // navbar / keyboard jumps
+const RATE_SNAP = 1.6     // relaxed magnetic snap
+
+// Checkpoints the scroll settles on — everything else is a flyover transition
+const TRUE_SECTIONS = [0, 2, 3, 4, 9, 10, 12]
+
+const nearestTrue = (segment) =>
+  TRUE_SECTIONS.reduce((prev, curr) => (Math.abs(curr - segment) < Math.abs(prev - segment) ? curr : prev))
+
+const isFlight = () => useStore.getState().mode === 'flight'
+
+// If a section's content is taller than the screen (small phones, short laptops) it
+// scrolls inside its own box first; the journey only continues once you reach its end.
+const canScrollInside = (target, dy) => {
+  const box = target && target.closest ? target.closest('.section-content.scrolls') : null
+  if (!box || box.scrollHeight <= box.clientHeight + 2) return false
+  if (dy > 0) return box.scrollTop + box.clientHeight < box.scrollHeight - 1
+  if (dy < 0) return box.scrollTop > 0
+  return false
+}
 
 export default function useScrollProgress() {
   const targetRef = useRef(0)
   const currentRef = useRef(0)
+  const velocityRef = useRef(0)
   const rafRef = useRef(null)
-  const isNavigatingRef = useRef(false)
-  const isSnappingRef = useRef(false)
+  const modeRef = useRef('scroll') // 'scroll' | 'nav' | 'snap'
   const [activeSection, setActiveSection] = useState(0)
   const lastActiveSectionRef = useRef(0)
 
-  // Only these 7 sections are checkpoints — everything else is a flyover transition
-  const TRUE_SECTIONS = [0, 2, 3, 4, 9, 10, 12];
-
   const navigateTo = useCallback((sectionIndex) => {
-    targetRef.current = Math.max(0, Math.min(1, sectionIndex / (SECTION_COUNT - 1)))
-    isNavigatingRef.current = true
-    isSnappingRef.current = false
+    targetRef.current = Math.max(0, Math.min(1, sectionIndex / SEGMENTS))
+    modeRef.current = 'nav'
   }, [])
 
   useEffect(() => {
-    document.body.style.height = `${SECTION_COUNT * 100}vh`
+    let interactionTimeout = null
 
-    let interactionTimeout = null;
-
-    const handleInteractionEnd = () => {
-      clearTimeout(interactionTimeout);
+    const scheduleSnap = () => {
+      clearTimeout(interactionTimeout)
       interactionTimeout = setTimeout(() => {
-        const segments = SECTION_COUNT - 1;
-        const currentSegment = targetRef.current * segments;
+        targetRef.current = nearestTrue(targetRef.current * SEGMENTS) / SEGMENTS
+        modeRef.current = 'snap'
+      }, 900) // settle onto the nearest checkpoint shortly after scrolling stops
+    }
 
-        // Always snap to the absolute nearest TRUE section checkpoint
-        const nearestTrueSection = TRUE_SECTIONS.reduce((prev, curr) => {
-          return (Math.abs(curr - currentSegment) < Math.abs(prev - currentSegment) ? curr : prev);
-        });
-
-        targetRef.current = nearestTrueSection / segments;
-        isSnappingRef.current = true;
-      }, 1250); // Wait 1.25 seconds after scroll comes to a complete stop
-    };
+    const nudge = (delta) => {
+      modeRef.current = 'scroll'
+      targetRef.current = Math.max(0, Math.min(1, targetRef.current + delta))
+      scheduleSnap()
+    }
 
     const handleWheel = (e) => {
+      // In star-system mode the wheel zooms the camera / scrolls panels instead
+      if (!isFlight()) return
+      if (canScrollInside(e.target, e.deltaY)) return // let the section's own content scroll
       e.preventDefault()
-      isNavigatingRef.current = false
-      isSnappingRef.current = false
-      clearTimeout(interactionTimeout)
-      const delta = e.deltaY * SCROLL_SENSITIVITY
-      targetRef.current = Math.max(0, Math.min(1, targetRef.current + delta))
-      handleInteractionEnd()
+      // Normalise line/page delta modes (Firefox) to pixels
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1
+      nudge(e.deltaY * unit * SCROLL_SENSITIVITY)
     }
 
     // Touch support
     let touchStartY = 0
     const handleTouchStart = (e) => {
+      if (!isFlight()) return
       touchStartY = e.touches[0].clientY
-      isSnappingRef.current = false
       clearTimeout(interactionTimeout)
     }
     const handleTouchMove = (e) => {
-      e.preventDefault()
-      isNavigatingRef.current = false
+      if (!isFlight()) return
       const touchY = e.touches[0].clientY
-      const delta = (touchStartY - touchY) * 0.0008 // Reduced from 0.003 to require multiple swipes on mobile
-      targetRef.current = Math.max(0, Math.min(1, targetRef.current + delta))
+      const dy = touchStartY - touchY
+      if (isTypingTarget(e.target) || canScrollInside(e.target, dy)) {
+        touchStartY = touchY // native scrolling inside the section
+        return
+      }
+      e.preventDefault()
+      nudge(dy * 0.0008)
       touchStartY = touchY
     }
     const handleTouchEnd = () => {
-      handleInteractionEnd()
+      if (isFlight()) scheduleSnap()
     }
 
-    const animate = () => {
+    // Keyboard: hop between checkpoints
+    const handleKey = (e) => {
+      if (!isFlight() || isTypingTarget(document.activeElement)) return
+      const seg = Math.round(targetRef.current * SEGMENTS * 100) / 100
+      let next = null
+      if (['ArrowDown', 'PageDown', ' '].includes(e.key)) next = TRUE_SECTIONS.find((s) => s > seg + 0.01)
+      else if (['ArrowUp', 'PageUp'].includes(e.key)) next = [...TRUE_SECTIONS].reverse().find((s) => s < seg - 0.01)
+      else if (e.key === 'Home') next = 0
+      else if (e.key === 'End') next = SEGMENTS
+      if (next === null || next === undefined) return
+      e.preventDefault()
+      clearTimeout(interactionTimeout)
+      navigateTo(next)
+    }
+
+    let last = performance.now()
+    const animate = (now) => {
+      const dt = Math.min(0.05, (now - last) / 1000)
+      last = now
+
+      const rate = modeRef.current === 'nav' ? RATE_NAV : modeRef.current === 'snap' ? RATE_SNAP : RATE_SCROLL
       const diff = targetRef.current - currentRef.current
+      const step = diff * (1 - Math.exp(-rate * dt))
+      currentRef.current += step
 
-      // Navbar click: fast and responsive jump (0.06)
-      // Magnetic snap: gentle relaxed glide (0.025)
-      // Manual scroll: responsive (0.04)
-      let lerp = LERP_FACTOR
-      if (isNavigatingRef.current) lerp = 0.06
-      else if (isSnappingRef.current) lerp = 0.025
+      const instVel = dt > 0 ? step / dt : 0
+      velocityRef.current += (instVel - velocityRef.current) * (1 - Math.exp(-8 * dt))
 
-      currentRef.current += diff * lerp
-
-      // Snap when very close and hand back control
-      if (Math.abs(diff) < 0.0001) {
+      if (Math.abs(diff) < 0.00005) {
         currentRef.current = targetRef.current
-        isNavigatingRef.current = false
-        isSnappingRef.current = false
+        modeRef.current = 'scroll'
       }
 
-      // Only trigger updates if there is actual movement
-      if (Math.abs(diff) > 0.000001) {
-        useStore.getState().setProgress(currentRef.current)
+      if (Math.abs(diff) > 0.000001 || Math.abs(velocityRef.current) > 0.0001) {
+        if (Math.abs(diff) <= 0.000001) velocityRef.current = 0
+        useStore.getState().setProgress(currentRef.current, velocityRef.current)
 
-        const currentSegment = currentRef.current * (SECTION_COUNT - 1)
-        const nearestTrueSection = TRUE_SECTIONS.reduce((prev, curr) => {
-          return (Math.abs(curr - currentSegment) < Math.abs(prev - currentSegment) ? curr : prev);
-        });
-        if (nearestTrueSection !== lastActiveSectionRef.current) {
-          lastActiveSectionRef.current = nearestTrueSection
-          setActiveSection(nearestTrueSection)
+        let nearest = nearestTrue(currentRef.current * SEGMENTS)
+        if (nearest !== lastActiveSectionRef.current) {
+          lastActiveSectionRef.current = nearest
+          setActiveSection(nearest)
         }
       }
 
@@ -113,6 +144,7 @@ export default function useScrollProgress() {
     window.addEventListener('touchstart', handleTouchStart, { passive: true })
     window.addEventListener('touchmove', handleTouchMove, { passive: false })
     window.addEventListener('touchend', handleTouchEnd, { passive: true })
+    window.addEventListener('keydown', handleKey)
     rafRef.current = requestAnimationFrame(animate)
 
     return () => {
@@ -120,10 +152,11 @@ export default function useScrollProgress() {
       window.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('touchmove', handleTouchMove)
       window.removeEventListener('touchend', handleTouchEnd)
+      window.removeEventListener('keydown', handleKey)
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
       clearTimeout(interactionTimeout)
     }
-  }, [])
+  }, [navigateTo])
 
   return { activeSection, navigateTo, SECTION_COUNT }
 }

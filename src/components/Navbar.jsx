@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import Orrery from './Orrery'
+import { useStore } from '../store/useStore'
 
 export default function Navbar({ activeSection, navigateTo }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -20,8 +22,14 @@ export default function Navbar({ activeSection, navigateTo }) {
     { name: 'Contact', index: 12 },
   ]
 
+  const mode = useStore((s) => s.mode)
+  const exitSystem = useStore((s) => s.exitSystem)
+  const inSystem = mode === 'system'
+
   const handleNavClick = (index) => {
     setIsMenuOpen(false)
+    // Leaving the star system flies the camera back onto the journey path
+    if (useStore.getState().mode !== 'flight') exitSystem()
     navigateTo(index)
   }
 
@@ -35,24 +43,14 @@ export default function Navbar({ activeSection, navigateTo }) {
         Chirag Gajare
       </a>
 
-      {/* Hamburger Toggle Button */}
-      <button 
-        className={`mobile-menu-btn ${isMenuOpen ? 'open' : ''}`}
-        onClick={() => setIsMenuOpen(!isMenuOpen)}
-        aria-label="Toggle navigation"
-      >
-        <span className="hamburger-line"></span>
-        <span className="hamburger-line"></span>
-        <span className="hamburger-line"></span>
-      </button>
-
+      <div className="nav-right">
       {/* Nav Links Dropdown */}
       <div className={`nav-links-container ${isMenuOpen ? 'open' : ''}`}>
         <ul className="nav-links">
           {navItems.slice(1).map(({ name, index }) => (
             <li key={name}>
               <a
-                className={activeSection === index ? 'active' : ''}
+                className={!inSystem && activeSection === index ? 'active' : ''}
                 onClick={() => handleNavClick(index)}
               >
                 {name}
@@ -70,6 +68,22 @@ export default function Navbar({ activeSection, navigateTo }) {
             </a>
           </li>
         </ul>
+      </div>
+
+      {/* The way into the star system */}
+      <Orrery onActivate={() => setIsMenuOpen(false)} />
+
+      {/* Hamburger Toggle Button */}
+      <button 
+        className={`mobile-menu-btn ${isMenuOpen ? 'open' : ''}`}
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        aria-label="Toggle navigation"
+      >
+        <span className="hamburger-line"></span>
+        <span className="hamburger-line"></span>
+        <span className="hamburger-line"></span>
+      </button>
+
       </div>
     </nav>
   )

@@ -1,106 +1,110 @@
-import { Canvas, useFrame } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { useRef } from 'react'
+import * as THREE from 'three'
 import Starfield from './Starfield'
-import CosmicClouds from './CosmicClouds'
 import Galaxies from './Galaxies'
 import ShootingStars from './ShootingStars'
+import NebulaSky from './NebulaSky'
+import CameraRig from './CameraRig'
+import WarpStreaks from './WarpStreaks'
+import StarSystem, { bodyRegistry } from './system/StarSystem'
+import { labelEls } from './system/bridge'
+import { BODY_BY_ID } from './system/systemData'
 import { useStore } from '../store/useStore'
 
-const FLIGHT_PATH = [
-  [0, 0],         // 0: Hero
-  [0, 0],         // 1: (Straight - WavyName)
-  [0, 0],         // 2: Pitch (Straight)
-  [30, 0],        // 3: About (TURN RIGHT)
-  [30, 0],        // 4: TechTitle (Straight)
-  [30, 0],        // 5: tech-stack-2 (Straight)
-  [30, 0],        // 6: tech-stack-3 (Straight)
-  [30, 0],        // 7: tech-stack-4 (Straight)
-  [30, 0],        // 8: tech-stack-5 (Straight)
-  [30, -20],      // 9: Experience (TURN DOWN - Single direction change)
-  [-30, -20],     // 10: Projects (TURN LEFT - Single direction change)
-  [-30, 0],       // 11: WavyNameReverse (TURN UP - Single direction change)
-  [-30, 0],       // 12: Contact (Straight)
-  [-30, 0]        // 13: Buffer
-];
+const MAX_DPR = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio : 1, 1.5)
 
-function CameraController({ mouse }) {
-  const currentTiltX = useRef(0)
-  const currentTiltY = useRef(0)
-
-  useFrame(({ camera }) => {
-    const progress = useStore.getState().progress;
-    // scrollIndex maps progress to our 13 sections (0 to 12 segments)
-    const scrollIndex = progress * 12;
-    const currIndex = Math.floor(scrollIndex);
-    const nextIndex = Math.min(currIndex + 1, FLIGHT_PATH.length - 1);
-    const fraction = scrollIndex - currIndex;
-
-    // Make the fraction directional/stepped so space moves rapidly during transitions
-    // and stays relatively still while reading a section
-    let steppedFraction = 0;
-    if (fraction < 0.25) steppedFraction = 0;
-    else if (fraction > 0.75) steppedFraction = 1;
-    else steppedFraction = (fraction - 0.25) / 0.5;
-
-    // Smooth ease-in-out curve
-    const easedFraction = steppedFraction * steppedFraction * (3 - 2 * steppedFraction);
-
-    const p1 = FLIGHT_PATH[currIndex];
-    const p2 = FLIGHT_PATH[nextIndex];
-
-    // Apply directional transition to X and Y
-    const targetX = p1[0] + (p2[0] - p1[0]) * easedFraction;
-    const targetY = p1[1] + (p2[1] - p1[1]) * easedFraction;
-
-    // Apply directional transition to Z (Zoom)
-    const steppedScrollIndex = currIndex + easedFraction;
-    const targetZ = 10 - steppedScrollIndex * (180 / 12);
-
-    // Mouse controls X/Y physical movement AND tilting (Parallax) - reduced for less prominence
-    const mouseOffsetX = mouse ? (mouse.x * 2.5) : 0
-    const mouseOffsetY = mouse ? (mouse.y * 2.5) : 0
-
-    // Buttery smooth lerping (0.025 instead of 0.05)
-    camera.position.z += (targetZ - camera.position.z) * 0.025
-    camera.position.x += ((targetX + mouseOffsetX) - camera.position.x) * 0.025
-    camera.position.y += ((targetY + mouseOffsetY) - camera.position.y) * 0.025
-
-    // Softer tilt
-    const targetRotX = mouse ? (mouse.y * 0.08) : 0
-    const targetRotY = mouse ? (-mouse.x * 0.08) : 0
-
-    camera.rotation.x += (targetRotX - camera.rotation.x) * 0.025
-    camera.rotation.y += (targetRotY - camera.rotation.y) * 0.025
-    camera.rotation.z += (0 - camera.rotation.z) * 0.025
+// Watches the real frame time and lowers the render resolution if the device struggles,
+// so the site stays fluid on low-end laptops and phones instead of stuttering.
+function AdaptiveQuality() {
+  const setDpr = useThree((s) => s.setDpr)
+  const samples = useRef({ t: 0, n: 0, dpr: MAX_DPR, cooldown: 2.5 })
+  useFrame((_, dt) => {
+    const s = samples.current
+    if (document.hidden) return
+    s.cooldown -= dt
+    if (s.cooldown > 0) return // ignore start-up / shader compile frames
+    s.t += dt
+    s.n += 1
+    if (s.t < 1.5) return
+    const avg = s.t / s.n
+    s.t = 0
+    s.n = 0
+    if (avg > 1 / 42 && s.dpr > 0.75) {
+      s.dpr = Math.max(0.75, s.dpr - 0.25)
+      setDpr(s.dpr)
+      s.cooldown = 1.5
+    } else if (avg < 1 / 58 && s.dpr < MAX_DPR) {
+      s.dpr = Math.min(MAX_DPR, s.dpr + 0.25)
+      setDpr(s.dpr)
+      s.cooldown = 4
+    }
   })
+  return null
+}
 
+// Projects planet positions to screen space and moves the HTML labels (no React renders)
+const _p = new THREE.Vector3()
+const _pp = new THREE.Vector3()
+const hide = (el) => {
+  if (el.style.opacity !== '0') el.style.opacity = '0'
+}
+function SystemLabels() {
+  const { size } = useThree()
+  useFrame(({ camera }) => {
+    const { mode, selected } = useStore.getState()
+    const show = mode === 'system' && !selected
+    labelEls.forEach((el, id) => {
+      const entry = bodyRegistry.get(id)
+      if (!entry || !show) return hide(el)
+      entry.object.getWorldPosition(_p)
+      const dist = _p.distanceTo(camera.position)
+      _p.project(camera)
+      if (_p.z > 1) return hide(el)
+      // offset the label below the body by its projected radius
+      const pxR = (entry.radius / (dist * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)))) * (size.height / 2)
+      const x = (_p.x * 0.5 + 0.5) * size.width
+      const y = (-_p.y * 0.5 + 0.5) * size.height + pxR + 10
+      // Moons only get a label once they separate visually from their planet (zoomed in)
+      const parent = BODY_BY_ID[id]?.parent
+      if (parent) {
+        bodyRegistry.get(parent)?.object.getWorldPosition(_pp)
+        _pp.project(camera)
+        const dx = (_pp.x - _p.x) * 0.5 * size.width
+        const dy = (_pp.y - _p.y) * 0.5 * size.height
+        if (Math.hypot(dx, dy) < 90) return hide(el)
+      }
+      el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) translateX(-50%)`
+      el.style.opacity = '1'
+    })
+  })
   return null
 }
 
 export default function SpaceScene({ mouse }) {
-  const showCosmicClouds = useStore((state) => state.showCosmicClouds)
-
   return (
     <div className="space-canvas">
       <Canvas
-        camera={{ fov: 60, near: 0.1, far: 500, position: [0, 0, 10] }}
-        dpr={[1, 1.5]}
+        camera={{ fov: 60, near: 0.1, far: 1600, position: [0, 0, 10] }}
+        dpr={MAX_DPR}
         gl={{
-          antialias: false,
+          antialias: true,
           alpha: false,
           powerPreference: 'high-performance',
+          stencil: false,
         }}
-        style={{ background: '#000000' }}
+        style={{ background: '#000000', touchAction: 'none' }}
       >
-        {/* Soft cosmic ambient light */}
-        <ambientLight intensity={0.2} />
+        <AdaptiveQuality />
+        <CameraRig mouse={mouse} />
 
-        <CameraController mouse={mouse} />
-
+        <NebulaSky />
         <Starfield />
-        {showCosmicClouds && <CosmicClouds />}
         <Galaxies />
         <ShootingStars />
+        <StarSystem />
+        <WarpStreaks />
+        <SystemLabels />
       </Canvas>
     </div>
   )

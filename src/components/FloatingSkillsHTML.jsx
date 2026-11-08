@@ -1,163 +1,96 @@
-import { useMemo, useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useStore } from '../store/useStore'
+import { SKILL_GROUPS } from './system/systemData'
+import { mulberry32 } from '../utils/math'
 
-const SKILLS = [
-  "React.js", "Next.js", "Node.js", "Express.js", "Python",
-  "Django", "MongoDB", "PostgreSQL", "MySQL", "Supabase",
-  "Docker", "AWS", "Google Cloud", "Firebase", "Git",
-  "GitHub", "Postman", "Socket.io", "Y.js", "Monaco Editor",
-  "Tailwind CSS", "Material UI", "Vite", "MongoDB Atlas", 
-  "ImageKit", "Google Gemini API", "Hostinger Website Builder", 
-  "REST APIs", "Cloudflare", "Google Stitch"
-]
+// Skills scattered through space; scrolling zooms the camera past them.
+// Same camera, range, timing and fade rules as the original fly-past (words stay
+// crisp and readable, then slip past the screen); refinements: an even spread with
+// no clumps or gaps, a tint per category, and a soft glow as each word approaches.
 
 export default function FloatingSkillsHTML() {
   const containerRef = useRef(null)
   const sceneRef = useRef(null)
-  const skillsRefs = useRef([])
+  const itemRefs = useRef([])
 
-  const skillsData = useMemo(() => {
-    return SKILLS.map((skill, i) => {
-      const z = 1000 + Math.random() * 5000;
-      
-      const angle = Math.random() * Math.PI * 2;
-      const radius = 15 + Math.random() * 45;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius * 0.7;
-
+  const items = useMemo(() => {
+    const rand = mulberry32(31)
+    const all = SKILL_GROUPS.flatMap((g) => g.items.map((s) => ({ text: s, tint: g.tint })))
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1))
+      ;[all[i], all[j]] = [all[j], all[i]]
+    }
+    const n = all.length
+    return all.map((s, i) => {
+      // golden-angle spread so neighbours in depth never land in the same spot
+      const a = i * 2.39996 + (rand() - 0.5) * 0.6
+      const r = 15 + rand() * 40
       return {
-        text: skill,
-        x,
-        y,
-        z,
-        scale: 0.8 + (i % 3) * 0.2
+        ...s,
+        x: Math.cos(a) * r, // vw
+        y: Math.sin(a) * r * 0.7, // vh
+        z: 1000 + (i / n) * 5000 + (rand() - 0.5) * 120,
+        scale: 0.8 + (i % 3) * 0.2,
       }
     })
   }, [])
 
   useEffect(() => {
-    const updateUI = (state) => {
-      const progress = state.progress;
-      const scrollIndex = progress * 12;
-      
-      const isVisible = scrollIndex > 4.2 && scrollIndex < 8.5;
-      
-      if (containerRef.current) {
-        if (!isVisible) {
-          containerRef.current.style.display = 'none';
-          return;
-        }
-        containerRef.current.style.display = 'block';
-
-        let containerOpacity = 0;
-        if (scrollIndex > 4.2 && scrollIndex < 4.8) {
-          containerOpacity = (scrollIndex - 4.2) / 0.6;
-        } else if (scrollIndex >= 4.8 && scrollIndex <= 8.2) {
-          containerOpacity = 1;
-        } else if (scrollIndex > 8.2 && scrollIndex < 8.5) {
-          containerOpacity = (8.5 - scrollIndex) / 0.3;
-        }
-        containerRef.current.style.opacity = containerOpacity.toString();
+    const update = (state) => {
+      const scrollIndex = state.progress * 12
+      const el = containerRef.current
+      if (!el) return
+      const visible = scrollIndex > 4.2 && scrollIndex < 8.5
+      if (!visible) {
+        if (el.style.display !== 'none') el.style.display = 'none'
+        return
       }
+      el.style.display = 'block'
+      let o = 1
+      if (scrollIndex < 4.8) o = (scrollIndex - 4.2) / 0.6
+      else if (scrollIndex > 8.2) o = (8.5 - scrollIndex) / 0.3
+      el.style.opacity = o.toFixed(3)
 
-      const cameraZ = Math.max(0, (scrollIndex - 3.5) * 1200);
-      if (sceneRef.current) {
-        sceneRef.current.style.transform = `translateZ(${cameraZ}px)`;
-      }
+      const cam = Math.max(0, (scrollIndex - 3.5) * 1200)
+      sceneRef.current.style.transform = `translateZ(${cam.toFixed(1)}px)`
 
-      skillsRefs.current.forEach((el, i) => {
-        if (!el) return;
-        const data = skillsData[i];
-        const distToCamera = data.z - cameraZ;
-        
-        let opacity = 1;
-        if (distToCamera > 3000) opacity = 0;
-        else if (distToCamera < 100) opacity = Math.max(0, distToCamera / 100);
-
-        if (opacity <= 0) {
-          el.style.opacity = '0';
-          el.style.display = 'none';
-          return;
+      itemRefs.current.forEach((node, i) => {
+        if (!node) return
+        const d = items[i].z - cam
+        let op = 1
+        if (d > 3000) op = 0
+        else if (d < 100) op = Math.max(0, d / 100)
+        if (op <= 0) {
+          if (node.style.display !== 'none') node.style.display = 'none'
+          return
         }
-
-        const closeness = Math.max(0, Math.min(1, 1 - (distToCamera - 500) / 1500));
-        const saturation = closeness * 80;
-        const lightness = 100 - (closeness * 25);
-        
-        el.style.display = 'block';
-        el.style.opacity = opacity.toString();
-        
-        // Optimize text shadow by only rendering when reasonably close
-        if (closeness > 0.3) {
-           el.style.textShadow = `0 0 ${closeness * 20 | 0}px hsla(270, ${saturation | 0}%, ${lightness | 0}%, ${closeness * 0.4})`;
-        } else {
-           el.style.textShadow = 'none';
-        }
-      });
-    };
-
-    const unsubscribe = useStore.subscribe(updateUI);
-    updateUI(useStore.getState());
-
-    return () => unsubscribe();
-  }, [skillsData]);
+        node.style.display = 'block'
+        node.style.opacity = op.toFixed(3)
+        node.style.setProperty('--glow', Math.max(0, Math.min(1, 1 - (d - 500) / 1500)).toFixed(2))
+      })
+    }
+    const unsub = useStore.subscribe(update)
+    update(useStore.getState())
+    return unsub
+  }, [items])
 
   return (
-    <div 
-      ref={containerRef}
-      className="floating-skills-container"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        pointerEvents: 'none',
-        perspective: '1000px',
-        zIndex: 5,
-        overflow: 'hidden',
-        opacity: 0,
-        display: 'none',
-        willChange: 'opacity'
-      }}
-    >
-      <div
-        ref={sceneRef}
-        className="floating-skills-scene"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          transformStyle: 'preserve-3d',
-          transform: 'translateZ(0px)',
-          willChange: 'transform'
-        }}
-      >
-        {skillsData.map((data, i) => {
-          const closeness = 0; // initialize
-          const saturation = closeness * 80;
-          const lightness = 100 - (closeness * 25);
-          const color = `hsl(270, ${saturation | 0}%, ${lightness | 0}%)`;
-
-          return (
-             <div
-              key={i}
-              ref={el => skillsRefs.current[i] = el}
-              style={{
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                transform: `translate3d(calc(-50% + ${data.x}vw), calc(-50% + ${data.y}vh), -${data.z}px) scale(${data.scale})`,
-                color: color,
-                fontFamily: "'Space Grotesk', sans-serif",
-                fontWeight: 600,
-                fontSize: 'clamp(1.2rem, 4vw, 2.5rem)',
-                whiteSpace: 'nowrap',
-                opacity: 0,
-                display: 'none',
-                willChange: 'transform, opacity',
-              }}
-            >
-              {data.text}
-            </div>
-          )
-        })}
+    <div ref={containerRef} className="floating-skills-container" style={{ display: 'none', opacity: 0 }} aria-hidden="true">
+      <div ref={sceneRef} className="fsk-scene">
+        {items.map((it, i) => (
+          <div
+            key={it.text}
+            ref={(el) => (itemRefs.current[i] = el)}
+            className="fsk-skill"
+            style={{
+              '--tint': it.tint,
+              display: 'none',
+              transform: `translate3d(calc(-50% + ${it.x.toFixed(2)}vw), calc(-50% + ${it.y.toFixed(2)}vh), -${it.z.toFixed(0)}px) scale(${it.scale})`,
+            }}
+          >
+            {it.text}
+          </div>
+        ))}
       </div>
     </div>
   )

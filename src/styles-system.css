@@ -1,0 +1,575 @@
+/* =====================================================================
+   ORRERY — the way into the star system (navbar)
+   ===================================================================== */
+.orrery {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 46px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+.orrery-dial {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--hair);
+  background: radial-gradient(circle at 50% 50%, rgba(255, 196, 107, 0.16), rgba(8, 7, 14, 0.55) 60%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: border-color 0.4s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+}
+.orrery-dial svg { width: 40px; height: 40px; overflow: visible; }
+.o-ring { fill: none; stroke: rgba(243, 239, 230, 0.16); stroke-width: 0.6; }
+.o-sun { fill: #ffc46b; filter: drop-shadow(0 0 3px #ffb054); animation: oSun 3.2s ease-in-out infinite; }
+.o-orb { transform-origin: 24px 24px; animation: spin linear infinite; }
+.o-orb-1 { animation-duration: 6s; }
+.o-orb-2 { animation-duration: 11s; animation-direction: reverse; }
+.o-orb-3 { animation-duration: 19s; }
+@keyframes oSun { 50% { filter: drop-shadow(0 0 6px #ffb054); } }
+.o-back {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.orrery-label {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.7rem);
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--hair);
+  background: rgba(8, 7, 14, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+.orrery-label em { font-family: var(--serif); font-size: 1.05rem; letter-spacing: 0; text-transform: none; color: var(--gold); margin-right: 0.15rem; }
+.orrery:hover .orrery-label,
+.orrery:focus-visible .orrery-label,
+.orrery.is-teasing .orrery-label,
+.orrery.is-inside .orrery-label { opacity: 1; transform: none; }
+.orrery:hover .orrery-dial,
+.orrery.is-teasing .orrery-dial { border-color: rgba(255, 196, 107, 0.6); box-shadow: 0 0 24px rgba(255, 196, 107, 0.25); transform: rotate(-12deg) scale(1.06); }
+.orrery:hover .o-orb { animation-duration: 2.4s; }
+.orrery:hover .o-orb-2 { animation-duration: 3.6s; }
+.orrery:hover .o-orb-3 { animation-duration: 5s; }
+.orrery::after {
+  /* a slow radar ping that invites a click */
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 196, 107, 0.5);
+  animation: oPing 4.5s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes oPing {
+  0%, 60% { transform: scale(1); opacity: 0; }
+  62% { opacity: 0.8; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+.orrery.is-inside::after { display: none; }
+.orrery.is-inside svg { opacity: 0.25; }
+.orrery.is-inside .o-back { opacity: 1; }
+html.system-mode .nav-links-container { opacity: 0.6; }
+
+/* =====================================================================
+   STAR SYSTEM OVERLAY
+   ===================================================================== */
+.system-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+}
+.system-overlay.is-active {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.8s ease 1.6s, visibility 0s linear 0s; /* appear once we've flown in */
+}
+
+/* things that only belong to the orbit view */
+.sys-title, .sys-dock, .sys-controls, .planet-labels { transition: opacity 0.5s ease, transform 0.6s ease; }
+.system-overlay.is-landing .sys-title,
+.system-overlay.is-landing .sys-dock,
+.system-overlay.is-landing .sys-controls { opacity: 0; pointer-events: none !important; transform: translateY(10px); }
+
+/* ---- labels ---- */
+.planet-labels { position: absolute; inset: 0; overflow: hidden; }
+.planet-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 0.25rem 0.6rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink);
+  pointer-events: none;
+  white-space: nowrap;
+  transition: opacity 0.35s ease, background 0.25s ease;
+  will-change: transform, opacity;
+}
+.pl-name { font-family: 'Space Grotesk', var(--sans); font-weight: 600; font-size: 0.74rem; letter-spacing: 0.04em; line-height: 1.2; text-shadow: 0 0 10px #000, 0 0 2px #000; }
+.pl-tag {
+  font-family: var(--sans); font-weight: 500;
+  font-size: 0.52rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c);
+  text-shadow: 0 0 8px #000;
+}
+.planet-label.is-moon .pl-name { font-size: 0.64rem; }
+.planet-label.is-hover { background: rgba(255, 255, 255, 0.07); }
+.planet-label.is-hover .pl-name { text-shadow: 0 0 14px var(--c); }
+
+/* ---- title + hint ---- */
+.sys-title {
+  position: absolute;
+  top: 5.4rem;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+.sys-kicker {
+  font-family: var(--sans); font-weight: 500;
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.sys-title h2 {
+  margin-top: 0.35rem;
+  font-family: 'Space Grotesk', var(--sans);
+  font-weight: 600;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.sys-hint {
+  margin-top: 0.6rem;
+  font-family: var(--sans); font-weight: 500;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  transition: opacity 0.8s ease;
+}
+.sys-hint.is-gone { opacity: 0; }
+.hint-touch, .sys-help .hint-touch-block { display: none; }
+
+/* Touch devices get touch wording, whatever their width (phones, tablets, touch laptops) */
+@media (hover: none) and (pointer: coarse) {
+  .hint-desktop, .sys-help .hint-desktop-block { display: none; }
+  .hint-touch { display: inline; }
+  .sys-help .hint-touch-block { display: grid; }
+}
+
+/* cursor tells you what a drag will do */
+html.system-mode .space-canvas { cursor: grab; }
+html.system-mode.is-pointing .space-canvas { cursor: pointer; }
+html.is-grabbing .space-canvas { cursor: grabbing; }
+
+/* ---- dock ---- */
+.sys-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 1.6rem;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.15rem;
+  padding: 0.3rem;
+  max-width: calc(100vw - 2rem);
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-radius: 999px;
+  border: 1px solid var(--hair);
+  background: rgba(8, 7, 14, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  pointer-events: auto;
+}
+.sys-dock::-webkit-scrollbar { display: none; }
+.dock-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.8rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-mute);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.25s ease, background 0.25s ease;
+}
+.dock-item:hover, .dock-item:focus-visible { color: var(--ink); background: color-mix(in srgb, var(--c) 16%, transparent); outline: none; }
+.dock-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
+
+/* ---- zoom controls ---- */
+.sys-controls {
+  position: absolute;
+  right: 1.4rem;
+  bottom: 1.6rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 999px;
+  border: 1px solid var(--hair);
+  background: rgba(8, 7, 14, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  pointer-events: auto;
+}
+.sys-controls button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.sys-controls button + button { border-top: 1px solid var(--hair); }
+.sys-controls button:hover { background: rgba(255, 255, 255, 0.07); color: var(--ink); }
+.sys-controls button.is-on { color: var(--gold); }
+
+/* ---- gesture guide ---- */
+.sys-help {
+  position: absolute;
+  right: 4.6rem;
+  bottom: 5.4rem;
+  width: min(380px, calc(100vw - 2rem));
+  padding: 1.1rem 1.3rem;
+  border-radius: 18px;
+  border: 1px solid var(--hair);
+  background: rgba(8, 7, 14, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  pointer-events: auto;
+  animation: hudIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.sys-help dl { display: grid; gap: 0.7rem; }
+.sys-help div { display: grid; grid-template-columns: 9.6rem 1fr; gap: 0.8rem; align-items: baseline; }
+.sys-help dt { font-family: var(--sans); font-weight: 600; font-size: 0.72rem; color: var(--ink); }
+.sys-help dd { font-family: var(--sans); font-size: 0.74rem; line-height: 1.45; color: var(--ink-soft); }
+
+/* ---- approach status ---- */
+.landing-status {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: var(--sans); font-weight: 500;
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  text-shadow: 0 0 14px #000;
+}
+.landing-status.is-visible { opacity: 1; transition-delay: 0.2s; }
+.ls-dot { width: 7px; height: 7px; border-radius: 50%; animation: badgePulse 1s ease-in-out infinite; }
+
+/* =====================================================================
+   LANDED — the world's story floats in the sky above its horizon
+   ===================================================================== */
+.planet-hud {
+  position: absolute;
+  left: 50%;
+  top: 9vh;
+  transform: translateX(-50%);
+  width: min(760px, calc(100vw - 3rem));
+  max-height: 58vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  pointer-events: auto;
+  outline: none;
+  user-select: text;
+  -webkit-user-select: text;
+}
+/* a soft pool of darkness behind the text so it stays readable over any sky */
+.planet-hud::before {
+  content: '';
+  position: absolute;
+  inset: -12% -18%;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.25) 60%, transparent);
+  pointer-events: none;
+}
+.planet-hud > * { animation: hudIn 1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.planet-hud > :nth-child(2) { animation-delay: 0.08s; }
+.planet-hud > :nth-child(3) { animation-delay: 0.16s; }
+.planet-hud > :nth-child(4) { animation-delay: 0.26s; }
+@keyframes hudIn {
+  from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.hud-eyebrow {
+  font-family: var(--sans); font-weight: 500;
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.hud-eyebrow span { color: var(--c); }
+.hud-title {
+  margin-top: 0.5rem;
+  font-family: 'Space Grotesk', var(--sans);
+  font-weight: 600;
+  font-size: clamp(2.4rem, 5.4vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-shadow: 0 0 40px color-mix(in srgb, var(--c) 40%, transparent), 0 2px 20px rgba(0, 0, 0, 0.6);
+}
+.hud-sub {
+  margin-top: 0.6rem;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--c);
+}
+.hud-body {
+  margin-top: 1.4rem;
+  width: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  mask-image: linear-gradient(to bottom, #000 85%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #000 85%, transparent);
+  padding-bottom: 1.2rem;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
+}
+.hud-body::-webkit-scrollbar { display: none; }
+.hud-lead {
+  margin: 0 auto;
+  max-width: 36ch;
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+  line-height: 1.5;
+  color: var(--ink);
+}
+.hud-lead em { font-style: normal; font-weight: 500; color: var(--c); }
+.hud-text { margin: 1rem auto 0; max-width: 58ch; font-size: 0.9rem; color: var(--ink-soft); }
+.hud-kicker { font-family: var(--sans); font-weight: 500; font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--c); margin-bottom: 0.5rem; }
+.hud-inline { margin-top: 1rem; font-family: var(--sans); font-weight: 500; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
+.hud-inline i { font-style: normal; margin: 0 0.5rem; color: var(--c); }
+.hud-figures { display: flex; justify-content: center; gap: 2.4rem; margin: 1.4rem 0 0.2rem; }
+.hud-figures div { display: flex; flex-direction: column-reverse; gap: 0.2rem; }
+.hud-figures dd { font-family: 'Space Grotesk', var(--sans); font-weight: 600; font-size: 1.7rem; line-height: 1; color: var(--ink); }
+.hud-figures dt { font-family: var(--sans); font-weight: 500; font-size: 0.56rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-mute); }
+/* Stackara: tabs + chips */
+.hud-stack { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+.stack-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.45rem; }
+.stack-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 38px;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--hair);
+  border-radius: 999px;
+  background: rgba(8, 7, 14, 0.45);
+  color: var(--ink-mute);
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+.stack-tab small { font-size: 0.62rem; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.stack-tab:hover { color: var(--ink); }
+.stack-tab.is-on { color: var(--ink); border-color: color-mix(in srgb, var(--t) 70%, transparent); background: color-mix(in srgb, var(--t) 14%, rgba(8, 7, 14, 0.5)); }
+.stack-tab.is-on small { color: var(--t); }
+.st-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--t); box-shadow: 0 0 8px var(--t); }
+.stack-items { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.65rem; max-width: 600px; }
+.stack-items li {
+  padding: 0.6rem 1.15rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--t) 38%, transparent);
+  background: rgba(8, 7, 14, 0.5);
+  font-family: 'Space Grotesk', var(--sans);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--ink);
+  text-shadow: none;
+  animation: hudIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--i) * 40ms) both;
+}
+.stack-total { font-family: var(--sans); font-size: 0.62rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-mute); }
+.hud-projects { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6rem; margin-top: 1.4rem; text-align: left; }
+.hud-project {
+  display: flex;
+  gap: 0.9rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.hud-project img { width: 46px; height: 46px; flex-shrink: 0; border-radius: 50%; padding: 8px; background: rgba(243, 239, 230, 0.94); object-fit: contain; }
+.hud-project strong { display: block; font-family: 'Space Grotesk', var(--sans); font-size: 1.1rem; font-weight: 600; }
+.hud-project small { display: block; margin-top: 0.2rem; font-size: 0.78rem; line-height: 1.5; color: var(--ink-soft); }
+.hud-project em { display: inline-block; margin-top: 0.4rem; font-style: normal; font-family: var(--sans); font-weight: 500; font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--c); }
+.hud-project:hover strong { color: var(--c); }
+.hud-logo { width: 64px; height: 64px; margin: 0 auto 1rem; padding: 10px; border-radius: 50%; background: rgba(243, 239, 230, 0.94); object-fit: contain; display: block; }
+.hud-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.6rem 1.8rem; margin-top: 1.3rem; }
+.hud-links a, .hud-links button {
+  position: relative;
+  padding: 0 0 3px;
+  border: none;
+  background: none;
+  font-family: var(--sans); font-weight: 500;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+}
+.hud-links a::after, .hud-links button::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--c);
+  transform: scaleX(0.3);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hud-links a:hover::after, .hud-links button:hover::after { transform: scaleX(1); }
+
+/* travel bar, resting on the planet's surface */
+.hud-nav {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2rem;
+  width: fit-content;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem;
+  border-radius: 999px;
+  border: 1px solid var(--hair);
+  background: rgba(8, 7, 14, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  pointer-events: auto;
+  animation: hudIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+}
+.hud-nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.95rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--sans);
+  font-size: 0.74rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.hud-nav button:hover { background: rgba(255, 255, 255, 0.07); color: var(--ink); }
+.hud-nav .hud-takeoff { background: var(--c); color: #0b0614; font-weight: 600; }
+.hud-nav .hud-takeoff:hover { background: color-mix(in srgb, var(--c) 85%, #fff); color: #0b0614; }
+
+/* ---- phones ---- */
+@media (max-width: 768px) {
+  .orrery-dial { width: 44px; height: 44px; }
+  .orrery::after { width: 44px; height: 44px; }
+  .orrery-label { font-size: 0.56rem; }
+  .orrery:hover .orrery-label { opacity: 0; }
+  .orrery.is-teasing .orrery-label { opacity: 1; }
+  .orrery.is-inside .orrery-label { display: none; }
+
+  .sys-title { top: 4.8rem; width: calc(100vw - 2rem); }
+  .sys-dock { bottom: 1rem; }
+  /* names stay visible: the dock scrolls sideways, with soft edges */
+  .sys-dock { left: 0.75rem; right: 0.75rem; transform: none; max-width: none; justify-content: flex-start;
+    mask-image: linear-gradient(to right, transparent, #000 1rem, #000 calc(100% - 1rem), transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 1rem, #000 calc(100% - 1rem), transparent); }
+  .dock-item { min-height: 44px; padding: 0.5rem 0.85rem; font-size: 0.78rem; flex-shrink: 0; }
+  .planet-label { padding: 0.55rem 0.8rem; }
+  .pl-name { font-size: 0.82rem; }
+  .sys-controls button { width: 44px; height: 44px; }
+  .sys-help { right: 4.4rem; left: 0.75rem; width: auto; bottom: auto; top: 9.5rem; }
+  .sys-help div { grid-template-columns: 6.4rem 1fr; }
+  .sys-controls { right: 0.8rem; bottom: 4.6rem; }
+
+  .planet-hud { top: 5rem; max-height: 62vh; width: calc(100vw - 2rem); }
+  .hud-title { font-size: clamp(2.4rem, 12vw, 3.2rem); }
+  .hud-sub { font-size: 1rem; }
+  .hud-lead { font-size: 1.08rem; }
+  .hud-text { font-size: 0.92rem; }
+  .hud-eyebrow { font-size: 0.6rem; }
+  .hud-figures { gap: 1.2rem; }
+  .hud-figures dd { font-size: 1.5rem; }
+  .hud-projects { grid-template-columns: 1fr; gap: 1rem; }
+  .hud-stack { gap: 1.2rem; }
+  .stack-tabs { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; max-width: 100%; padding: 2px 0.2rem; scrollbar-width: none; }
+  .stack-tabs::-webkit-scrollbar { display: none; }
+  .stack-tab { min-height: 40px; flex-shrink: 0; }
+  .stack-items { gap: 0.5rem; }
+  .stack-items li { font-size: 0.98rem; padding: 0.55rem 0.95rem; }
+  .hud-nav { bottom: 1.2rem; }
+  .hud-nav button { padding: 0.55rem 0.7rem; font-size: 0.68rem; }
+  .hud-nav button span { display: none; }
+  .hud-nav button { padding: 0.6rem 0.85rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .planet-hud > *, .hud-nav, .stack-items li { animation: none; }
+  .o-orb, .orrery::after { animation: none; }
+}
