@@ -877,11 +877,11 @@ The application employs several performance-conscious patterns:
 - Same content, redesigned sections. Smoother: frame-rate-independent damping, eased fades, layered depth stagger (`--d`), keyboard navigation.
 - **Skills** (`FloatingSkillsHTML.jsx`): the thirty skills are scattered through space and the camera zooms past them as you scroll (like the original), now as an even stream (golden-angle spread, never over the centre), with a soft glow and category tint as each approaches, and mouse parallax.
 - **Phones**: one calm column with larger type; if a section is taller than the screen it scrolls inside its own box (with a soft edge fade) before the journey continues.
-- The star system, **Chirag's Solar System**, is visible small and far away in the background (upper right on desktop).
+- The star system, **Nexoverse**, is visible small and far away in the background (upper right on desktop).
 - Cosmic Clouds toggle removed.
 
 ### The Orrery (`Orrery.jsx`)
-The way into the system: a tiny animated orrery in the navbar (planets in the real worlds' colours). It introduces itself once per session with a "Fly to Chirag's Solar System" label, shows the label on hover, and becomes a back arrow inside the system.
+The way into the system: a tiny animated orrery in the navbar (planets in the real worlds' colours). It introduces itself once per session with a "Fly to Nexoverse" label, shows the label on hover, and becomes a back arrow inside the system.
 
 ### Star system (`src/components/system/`, `CameraRig.jsx`)
 - Clicking the orrery flies the camera continuously from the journey into the system (star-streak "warp" during the flight, `WarpStreaks.jsx`), and back again.

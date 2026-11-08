@@ -38,14 +38,14 @@ export default function Orrery({ onActivate }) {
     <button
       className={`orrery ${inside ? 'is-inside' : ''} ${tease && !inside && progress === 0 ? 'is-teasing' : ''}`}
       onClick={activate}
-      aria-label={inside ? 'Return to the journey' : "Fly to Chirag's Solar System"}
+      aria-label={inside ? 'Return to the journey' : 'Fly to Nexoverse'}
     >
       <span className="orrery-label">
         {inside ? (
           <>Return to the journey</>
         ) : (
           <>
-            <em>Fly to</em> my solar system
+            <em>Fly to</em> Nexoverse
           </>
         )}
       </span>

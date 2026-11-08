@@ -304,7 +304,7 @@ html.system-mode .nav-links a { opacity: 0.5; }
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   html, body, #root { font-size: 16px; }
-  .navbar { padding: 0.9rem 1rem; }
+  .navbar { padding: 0.9rem 1.25rem; }
   .scroll-indicator { display: none !important; }
   .mobile-menu-btn { display: flex; flex-direction: column; justify-content: center; }
   .nav-links-container {
@@ -335,7 +335,7 @@ html.system-mode .nav-links a { opacity: 0.5; }
     backdrop-filter: none;
   }
   .nav-links a { font-size: 0.78rem; }
-  .section { padding: 4.6rem 1.4rem 3.2rem; }
+  .section { padding: 4.6rem 1.9rem 3.2rem; } /* a comfortable margin from the screen edges */
   .progress-line-container {
     top: auto;
     right: auto;
@@ -351,4 +351,5 @@ html.system-mode .nav-links a { opacity: 0.5; }
 }
 @media (max-width: 380px) {
   html, body, #root { font-size: 15px; }
+  .section { padding-left: 1.6rem; padding-right: 1.6rem; }
 }

@@ -99,7 +99,7 @@ export default function Contact() {
         <button
           className={`launch ${launching ? 'is-launching' : ''}`}
           onClick={launch}
-          aria-label="Launch to Chirag's Solar System"
+          aria-label="Launch to Nexoverse"
         >
           <span className="launch-craft" aria-hidden="true">
             <span className="launch-pad" />
@@ -129,7 +129,7 @@ export default function Contact() {
           </span>
           <span className="launch-text">
             <small>Ready for lift-off</small>
-            <strong>Launch to <em>Chirag's Solar System!</em></strong>
+            <strong>Launch to <em>Nexoverse!</em></strong>
           </span>
         </button>
       </div>

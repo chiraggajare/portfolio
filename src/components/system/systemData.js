@@ -1,4 +1,4 @@
-// Chirag's Solar System: a small star system where each body holds part of the portfolio.
+// Nexoverse: a small star system where each body holds part of the portfolio.
 // Positions are relative to SYSTEM_CENTER; all orbits lie on one flat plane.
 // It sits far ahead of the scroll journey, visible as a small distant system in the
 // background; "explore" flies the camera all the way there.

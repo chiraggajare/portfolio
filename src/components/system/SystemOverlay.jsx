@@ -262,7 +262,8 @@ export default function SystemOverlay({ navigateTo }) {
       {/* Orbit view: title, hint, dock, controls */}
       <header className="sys-title">
         <p className="sys-kicker">You've arrived at</p>
-        <h2>Chirag's Solar System</h2>
+        <h2>Nexoverse</h2>
+        <p className="sys-tagline">A connected universe of ideas</p>
         <p className={`sys-hint ${hintGone ? 'is-gone' : ''}`}>
           <span className="hint-desktop">Drag to orbit · Scroll to zoom · Right-drag to move · Click a world to land</span>
           <span className="hint-touch">Drag to orbit · Pinch to zoom & turn · Tap a world to land</span>
