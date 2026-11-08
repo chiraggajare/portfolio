@@ -507,6 +507,49 @@
 .launch-text strong { font-family: var(--serif); font-weight: 400; font-size: 1.02rem; line-height: 1.2; }
 .launch-text em { color: var(--gold); }
 
+/* tap hint: a finger taps the rocket every few seconds, with a ripple at the fingertip */
+.launch-tap {
+  position: absolute;
+  left: 58%;
+  top: 40%;
+  width: 18px;
+  height: 18px;
+  color: var(--ink);
+  pointer-events: none;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.8));
+  transition: opacity 0.3s ease;
+  animation: tapHand 2.6s ease-in-out 1s infinite both;
+}
+.launch-tap svg { display: block; fill: rgba(8, 7, 14, 0.85); }
+.launch-tap::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: -10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  opacity: 0;
+  animation: tapRipple 2.6s ease-out 1s infinite both;
+}
+@keyframes tapHand {
+  0%, 18% { transform: translate(9px, 10px) rotate(-10deg); opacity: 0; }
+  30% { transform: translate(3px, 3px) rotate(-6deg); opacity: 1; }
+  40% { transform: translate(0, 0) scale(1); opacity: 1; }
+  46% { transform: translate(0, 1px) scale(0.86); opacity: 1; }
+  54% { transform: translate(0, 0) scale(1); opacity: 1; }
+  72% { transform: translate(4px, 5px) rotate(-6deg); opacity: 1; }
+  86%, 100% { transform: translate(9px, 10px) rotate(-10deg); opacity: 0; }
+}
+@keyframes tapRipple {
+  0%, 44% { transform: scale(0.2); opacity: 0; }
+  47% { transform: scale(0.35); opacity: 0.95; }
+  75%, 100% { transform: scale(1.7); opacity: 0; }
+}
+.launch:hover .launch-tap, .launch:focus-visible .launch-tap, .launch.is-launching .launch-tap { opacity: 0; animation-play-state: paused; }
+.launch:hover .launch-tap::before, .launch.is-launching .launch-tap::before { animation: none; }
+
 .launch:hover .launch-rocket { animation: rkRumble 0.12s linear infinite; }
 .launch:hover .rk-flame { opacity: 1; animation-duration: 0.08s; }
 .launch:hover .launch-text strong em { text-shadow: 0 0 18px rgba(255, 196, 107, 0.5); }
@@ -532,6 +575,8 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .launch-rocket, .rk-flame, .rk-light, .launch-pad::before, .launch-pad::after, .launch-text small::before { animation: none; }
+  .launch-tap { animation: none; opacity: 0.9; transform: translate(2px, 2px); }
+  .launch-tap::before { animation: none; }
 }
 
 /* ---- layered depth stagger while flying past (driven by --d) ---- */

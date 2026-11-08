@@ -158,6 +158,7 @@ export default function CameraRig({ mouse }) {
   //   right / shift-drag      → pan (a flick keeps gliding)
   //   wheel / trackpad pinch  → zoom to cursor; trackpad sideways swipe → orbit
   //   tap a world             → land; the touch target is much bigger than the planet
+  //   on a world: pinch in / scroll out → take off again
   useEffect(() => {
     const el = gl.domElement
     const pointers = new Map()
@@ -412,6 +413,55 @@ export default function CameraRig({ mouse }) {
       const k = e.ctrlKey ? 0.01 : 0.0015 // trackpad pinch arrives as ctrl+wheel
       zoomAt(e.clientX, e.clientY, el, Math.exp(e.deltaY * unit * k))
     }
+    // ---- On a world: "zoom out" takes you a step back (take off to the whole system) ----
+    // Touch: pinch in (fingers together), anywhere on screen, text included.
+    // Desktop: scroll out / trackpad pinch out over the scene.
+    const landedOn = () => {
+      const s = useStore.getState()
+      return s.mode === 'system' && !!s.selected
+    }
+    const stepBack = () => {
+      backPts.clear()
+      backD0 = 0
+      wheelOut = 0
+      useStore.getState().select(null)
+    }
+    const backPts = new Map()
+    let backD0 = 0
+    const backDist = () => {
+      const [a, b] = [...backPts.values()]
+      return Math.hypot(a.x - b.x, a.y - b.y)
+    }
+    const onBackDown = (e) => {
+      if (e.pointerType === 'mouse' || !landedOn()) return
+      backPts.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      backD0 = backPts.size === 2 ? backDist() : 0
+    }
+    const onBackMove = (e) => {
+      if (!backPts.has(e.pointerId)) return
+      backPts.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      if (backPts.size === 2 && backD0 > 40 && landedOn() && backDist() < backD0 * 0.7) stepBack()
+    }
+    const onBackUp = (e) => {
+      backPts.delete(e.pointerId)
+      if (backPts.size < 2) backD0 = 0
+    }
+    let wheelOut = 0
+    let wheelT = 0
+    const onBackWheel = (e) => {
+      if (!landedOn()) return
+      // let the story text scroll first if it's taller than its box
+      const box = e.target.closest?.('.hud-body')
+      if (box && !e.ctrlKey && e.deltaY > 0 && box.scrollTop + box.clientHeight < box.scrollHeight - 1) return
+      if (e.ctrlKey) e.preventDefault() // trackpad pinch: never zoom the page
+      const now = performance.now()
+      if (now - wheelT > 350) wheelOut = 0 // a fresh gesture
+      wheelT = now
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1
+      wheelOut = Math.max(0, wheelOut + e.deltaY * unit * (e.ctrlKey ? 4 : 1))
+      if (wheelOut > 220) stepBack()
+    }
+
     const onLeave = () => hoverState.set(null)
     const onContext = (e) => {
       if (useStore.getState().mode === 'system') e.preventDefault()
@@ -454,6 +504,11 @@ export default function CameraRig({ mouse }) {
     }
 
     el.addEventListener('pointerdown', onDown)
+    window.addEventListener('pointerdown', onBackDown, true)
+    window.addEventListener('pointermove', onBackMove, true)
+    window.addEventListener('pointerup', onBackUp, true)
+    window.addEventListener('pointercancel', onBackUp, true)
+    window.addEventListener('wheel', onBackWheel, { passive: false })
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
     window.addEventListener('pointercancel', onUp)
@@ -464,6 +519,11 @@ export default function CameraRig({ mouse }) {
     window.addEventListener('keydown', onKey)
     return () => {
       el.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('pointerdown', onBackDown, true)
+      window.removeEventListener('pointermove', onBackMove, true)
+      window.removeEventListener('pointerup', onBackUp, true)
+      window.removeEventListener('pointercancel', onBackUp, true)
+      window.removeEventListener('wheel', onBackWheel)
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
       window.removeEventListener('pointercancel', onUp)

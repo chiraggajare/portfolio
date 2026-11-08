@@ -306,7 +306,7 @@ export default function SystemOverlay({ navigateTo }) {
             <div><dt>Two fingers</dt><dd>Move across the system</dd></div>
             <div><dt>Double-tap</dt><dd>Zoom in there · hold and drag to zoom</dd></div>
             <div><dt>Two-finger tap</dt><dd>Zoom out</dd></div>
-            <div><dt>Tap a world</dt><dd>Land on it</dd></div>
+            <div><dt>Tap a world</dt><dd>Land on it · pinch in to take off</dd></div>
           </dl>
           <dl className="hint-desktop-block">
             <div><dt>Drag</dt><dd>Orbit around</dd></div>
@@ -314,7 +314,7 @@ export default function SystemOverlay({ navigateTo }) {
             <div><dt>Right-drag · Shift-drag · WASD</dt><dd>Move across the system</dd></div>
             <div><dt>Double-click</dt><dd>Zoom in there (Shift: out)</dd></div>
             <div><dt>Arrow keys · + −</dt><dd>Orbit, tilt and zoom</dd></div>
-            <div><dt>Click a world</dt><dd>Land · Esc to take off</dd></div>
+            <div><dt>Click a world</dt><dd>Land · scroll out or Esc to take off</dd></div>
           </dl>
         </div>
       )}

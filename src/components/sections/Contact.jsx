@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { CheckCircle, AlertCircle } from 'lucide-react'
+import { CheckCircle, AlertCircle, Pointer } from 'lucide-react'
 import Eyebrow from './Eyebrow'
 import { useStore } from '../../store/useStore'
 
@@ -126,6 +126,10 @@ export default function Contact() {
               <circle className="rk-light" cx="21.4" cy="27.6" r="1.6" fill="#9ad7ff" />
               <path d="M20 44 L20 52" stroke="#a9a297" strokeWidth="1.2" />
             </svg>
+            {/* a finger tapping the rocket: tells people it's a button */}
+            <span className="launch-tap">
+              <Pointer size={18} strokeWidth={1.8} />
+            </span>
           </span>
           <span className="launch-text">
             <small>Ready for lift-off</small>
