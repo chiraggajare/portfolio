@@ -24,7 +24,8 @@ const SYSTEM_RADIUS = 110 // how far from the star the orbit focus may wander
 
 
 // Shared with WarpStreaks: camera speed (units/s) and whether we're on a "journey"
-export const cameraMotion = { speed: 0, warp: 0, dir: new THREE.Vector3(0, 0, -1) }
+// `settled`: orbiting the system with no long flight in progress (planet names show then)
+export const cameraMotion = { speed: 0, warp: 0, dir: new THREE.Vector3(0, 0, -1), settled: false }
 
 // ---------------------------------------------------------------------------
 // Orbit state (module level so the HTML controls can drive it without re-renders)
@@ -568,6 +569,8 @@ export default function CameraRig({ mouse }) {
       _q.setFromRotationMatrix(_m)
       camera.quaternion.slerp(_q, orbit.travel ? damp(2.2, dt) : 1)
     }
+
+    cameraMotion.settled = mode === 'system' && !selected && !orbit.travel
 
     // Speed → warp streaks (only during journeys, never while you're just orbiting)
     _vel.copy(camera.position).sub(_prev)

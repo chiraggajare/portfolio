@@ -541,8 +541,11 @@ html.is-grabbing .space-canvas { cursor: grabbing; }
     mask-image: linear-gradient(to right, transparent, #000 1rem, #000 calc(100% - 1rem), transparent);
     -webkit-mask-image: linear-gradient(to right, transparent, #000 1rem, #000 calc(100% - 1rem), transparent); }
   .dock-item { min-height: 44px; padding: 0.5rem 0.85rem; font-size: 0.78rem; flex-shrink: 0; }
-  .planet-label { padding: 0.55rem 0.8rem; }
-  .pl-name { font-size: 0.82rem; }
+  /* phones: just the world's name, small, so the labels never crowd the system */
+  .planet-label { padding: 0.3rem 0.45rem; }
+  .pl-name { font-size: 0.66rem; letter-spacing: 0.03em; }
+  .planet-label.is-moon .pl-name { font-size: 0.6rem; }
+  .pl-tag { display: none; }
   .sys-controls button { width: 44px; height: 44px; }
   .sys-help { right: 4.4rem; left: 0.75rem; width: auto; bottom: auto; top: 9.5rem; }
   .sys-help div { grid-template-columns: 6.4rem 1fr; }

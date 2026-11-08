@@ -9,11 +9,11 @@ export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' })
   const [launching, setLaunching] = useState(false)
 
-  // the rocket lifts off first, then the camera follows it into the star system
+  // the rocket lifts off and the camera follows it straight away into the star system
   const launch = () => {
     if (launching) return
     setLaunching(true)
-    setTimeout(() => useStore.getState().enterSystem(), 450)
+    setTimeout(() => useStore.getState().enterSystem(), 120)
     setTimeout(() => setLaunching(false), 2600)
   }
 

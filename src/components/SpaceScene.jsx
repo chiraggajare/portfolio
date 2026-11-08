@@ -1,11 +1,11 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import Starfield from './Starfield'
 import Galaxies from './Galaxies'
 import ShootingStars from './ShootingStars'
 import NebulaSky from './NebulaSky'
-import CameraRig from './CameraRig'
+import CameraRig, { cameraMotion } from './CameraRig'
 import WarpStreaks from './WarpStreaks'
 import StarSystem, { bodyRegistry } from './system/StarSystem'
 import { labelEls } from './system/bridge'
@@ -52,8 +52,8 @@ const hide = (el) => {
 function SystemLabels() {
   const { size } = useThree()
   useFrame(({ camera }) => {
-    const { mode, selected } = useStore.getState()
-    const show = mode === 'system' && !selected
+    // names appear only once the camera has arrived and stopped flying (not mid-warp)
+    const show = cameraMotion.settled
     labelEls.forEach((el, id) => {
       const entry = bodyRegistry.get(id)
       if (!entry || !show) return hide(el)
@@ -81,6 +81,60 @@ function SystemLabels() {
   return null
 }
 
+// Once the page is loaded and the browser is idle, get the GPU ready for the star system
+// in the background: compile every shader (including the parts that are still hidden, like
+// the sky backdrop and warp streaks) and upload every texture. Otherwise all of that would
+// happen the moment you launch into the system, which shows up as a stutter on phones.
+function Prewarm() {
+  const { gl, scene, camera } = useThree()
+  useEffect(() => {
+    let cancelled = false
+    let idleHandle = null
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1))
+    const cancelIdle = window.cancelIdleCallback || clearTimeout
+
+    const run = () => {
+      if (cancelled || !gl.compileAsync) return
+      const hidden = []
+      scene.traverse((o) => {
+        if (!o.visible) {
+          hidden.push(o)
+          o.visible = true
+        }
+      })
+      try {
+        // the programs are created synchronously here and finish linking in parallel
+        // (KHR_parallel_shader_compile) without blocking the page
+        gl.compileAsync(scene, camera).catch(() => {})
+      } finally {
+        hidden.forEach((o) => (o.visible = false))
+      }
+      const seen = new Set()
+      scene.traverse((o) => {
+        const mats = Array.isArray(o.material) ? o.material : o.material ? [o.material] : []
+        mats.forEach((m) => {
+          const maps = [m.map, ...Object.values(m.uniforms || {}).map((u) => u?.value)]
+          maps.forEach((t) => {
+            if (t?.isTexture && !seen.has(t)) {
+              seen.add(t)
+              gl.initTexture(t)
+            }
+          })
+        })
+      })
+    }
+
+    // let the first frames and the intro settle before doing background work
+    const t = setTimeout(() => (idleHandle = idle(run, { timeout: 4000 })), 1500)
+    return () => {
+      cancelled = true
+      clearTimeout(t)
+      if (idleHandle !== null) cancelIdle(idleHandle)
+    }
+  }, [gl, scene, camera])
+  return null
+}
+
 export default function SpaceScene({ mouse }) {
   return (
     <div className="space-canvas">
@@ -105,6 +159,7 @@ export default function SpaceScene({ mouse }) {
         <StarSystem />
         <WarpStreaks />
         <SystemLabels />
+        <Prewarm />
       </Canvas>
     </div>
   )
