@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const HOLD_MS = 2000 // fully visible (meanwhile the 3D universe loads and warms up)
+const HOLD_MS = 1500 // fully visible (meanwhile the 3D universe loads and warms up)
 const FADE_MS = 900 // then dissolves, and the first page fades in
 
 const reveal = () => document.documentElement.classList.remove('welcoming')
