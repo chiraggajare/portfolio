@@ -8,11 +8,14 @@ const COUNT = 220
 const DEPTH = 90
 
 // Stars stretch into streaks while the camera is on a journey (flying into the system,
-// between planets, or back to the scroll path). They always radiate from the centre of
-// the screen, where you're heading. Never shown while you just scroll or orbit.
+// between planets, or back to the scroll path). Flying forward they burst out of the centre
+// of the screen; pulling back (taking off, zooming out) they rush in towards it instead.
+// Never shown while you just scroll or orbit.
+const _fwd = new THREE.Vector3()
 export default function WarpStreaks() {
   const ref = useRef()
   const offset = useRef(0)
+  const heading = useRef(1) // +1 flying forward, -1 pulling back (smoothed)
 
   const { geometry, material } = useMemo(() => {
     const rand = mulberry32(99)
@@ -42,18 +45,20 @@ export default function WarpStreaks() {
       depthWrite: false,
       depthTest: false,
       blending: THREE.AdditiveBlending,
-      uniforms: { uOffset: { value: 0 }, uLen: { value: 1 }, uOpacity: { value: 0 } },
+      uniforms: { uOffset: { value: 0 }, uLen: { value: 1 }, uOpacity: { value: 0 }, uDir: { value: 1 } },
       vertexShader: /* glsl */ `
         attribute float aEnd;
         attribute float aTint;
         uniform float uOffset;
         uniform float uLen;
+        uniform float uDir;
         varying float vA;
         varying float vTint;
         void main() {
           vec3 p = position;
           p.z = mod(p.z + uOffset, ${DEPTH.toFixed(1)}) - ${DEPTH.toFixed(1)};
-          p.z += aEnd * uLen;
+          // the bright end leads: towards you going forward, into the distance going back
+          p.z += aEnd * uLen * uDir;
           vA = smoothstep(-${DEPTH.toFixed(1)}, -55.0, p.z) * (1.0 - smoothstep(-10.0, -2.0, p.z)) * (0.15 + aEnd * 0.85);
           vTint = aTint;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
@@ -78,12 +83,17 @@ export default function WarpStreaks() {
     const target = THREE.MathUtils.smoothstep(s, 20, 120) * 0.6 * cameraMotion.warp
     u.uOpacity.value += (target - u.uOpacity.value) * Math.min(1, dt * 6)
     u.uLen.value = THREE.MathUtils.clamp(s * 0.07, 0.4, 18)
-    offset.current = (offset.current + s * dt * 0.8) % 100000
+    // which way are we really moving, relative to where the camera looks?
+    _fwd.set(0, 0, -1).applyQuaternion(camera.quaternion)
+    const goal = cameraMotion.dir.dot(_fwd) < -0.15 ? -1 : 1
+    heading.current += (goal - heading.current) * Math.min(1, dt * 5)
+    u.uDir.value = heading.current < 0 ? -1 : 1
+    offset.current = (offset.current + s * dt * 0.8 * heading.current) % 100000
     u.uOffset.value = offset.current
     if (ref.current) {
       ref.current.visible = u.uOpacity.value > 0.005
       ref.current.position.copy(camera.position)
-      // always burst from the middle of the screen, towards the viewer
+      // centred on the middle of the screen
       ref.current.quaternion.copy(camera.quaternion)
     }
   })
