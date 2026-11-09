@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Chirag Gajare — Full-Stack Developer Portfolio. Crafting clean, performant, and delightful digital experiences." />
     <title>Chirag Gajare - Software Developer</title>
+    <script>
+      // first visit: hide the page behind the welcome veil before anything paints
+      try { if (localStorage.getItem('nexo-welcomed') !== '1') document.documentElement.classList.add('welcoming') }
+      catch (e) { document.documentElement.classList.add('welcoming') }
+    </script>
     <link rel="preconnect" href="https://res.cloudinary.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

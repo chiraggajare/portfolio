@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect, useRef } from 'react'
 import useScrollProgress from './hooks/useScrollProgress'
 import useMousePosition from './hooks/useMousePosition'
 import Navbar from './components/Navbar'
+import Welcome from './components/Welcome'
 import { useStore } from './store/useStore'
 
 // Sections
@@ -210,6 +211,8 @@ function App() {
   return (
     <>
       <Navbar activeSection={activeSection} navigateTo={navigateTo} />
+
+      <Welcome />
 
       <Suspense fallback={null}>
         <SpaceScene mouse={mouse} />
