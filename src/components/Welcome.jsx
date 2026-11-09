@@ -1,32 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
-const SEEN_KEY = 'nexo-welcomed'
 const HOLD_MS = 2000 // fully visible (meanwhile the 3D universe loads and warms up)
 const FADE_MS = 900 // then dissolves, and the first page fades in
 
-// Browser storage can throw (private mode, blocked site data): treat that as a first visit
-const seenBefore = () => {
-  try {
-    return localStorage.getItem(SEEN_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
 const reveal = () => document.documentElement.classList.remove('welcoming')
 
-// A soft, greyish veil of space shown once, on someone's very first visit. Only space shows
-// behind it; the page itself (hidden by html.welcoming, set in index.html before first paint)
-// fades in once the veil lifts.
+// A see-through grey veil shown on every load. Only space shows behind it; the page itself
+// (hidden by html.welcoming, set on <html> in index.html) fades in once the veil lifts.
 export default function Welcome() {
-  const [phase, setPhase] = useState(() => (seenBefore() ? 'done' : 'show'))
-  const firstVisit = useRef(phase === 'show') // decided once, before we mark it as seen
+  const [phase, setPhase] = useState('show') // 'show' | 'fade' | 'done'
   const [fontsReady, setFontsReady] = useState(false)
 
   // show the words only once their fonts have arrived (never longer than 1s), so they
   // don't appear in a fallback font and then jump
   useEffect(() => {
-    if (!firstVisit.current) return
     let live = true
     const ready = () => live && setFontsReady(true)
     const fonts = document.fonts
@@ -42,15 +29,6 @@ export default function Welcome() {
 
   // runs once: both timers must survive the switch to the fade phase
   useEffect(() => {
-    if (!firstVisit.current) {
-      reveal()
-      return
-    }
-    try {
-      localStorage.setItem(SEEN_KEY, '1')
-    } catch {
-      /* storage unavailable: it may show again next time, which is fine */
-    }
     const fade = setTimeout(() => {
       setPhase('fade')
       reveal()

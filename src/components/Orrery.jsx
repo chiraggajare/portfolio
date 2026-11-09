@@ -15,7 +15,7 @@ export default function Orrery({ onActivate }) {
     let seen = false
     try { seen = sessionStorage.getItem('orrery-tease') === '1' } catch { /* ignore */ }
     if (seen) return
-    // on a first visit, wait until the welcome veil has lifted
+    // wait until the welcome veil has lifted
     const wait = document.documentElement.classList.contains('welcoming') ? 2400 : 0
     const a = setTimeout(() => setTease(true), 1800 + wait)
     const b = setTimeout(() => {

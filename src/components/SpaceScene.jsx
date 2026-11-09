@@ -124,7 +124,7 @@ function Prewarm() {
       })
     }
 
-    // first visit: the welcome veil is up and nobody is interacting yet, so warm up now.
+    // the welcome veil is up and nobody is interacting yet, so warm up now.
     // Otherwise let the first frames settle, then use idle time.
     const welcoming = document.documentElement.classList.contains('welcoming')
     const t = welcoming ? setTimeout(run, 50) : setTimeout(() => (idleHandle = idle(run, { timeout: 4000 })), 1500)
